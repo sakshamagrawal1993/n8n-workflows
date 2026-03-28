@@ -26,7 +26,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=\n# Current User Message\n{{ $json.message_text }}\n\n# Previous Transcript\n{{ $json.messages }}",
+        "text": "=\n# Current User Message\n{{ $json.body?.message_text || $json.message_text }}\n\n# Previous Transcript (bounded)\n{{ (($json.body?.last_20_conversations || $json.last_20_conversations || $json.body?.messages || $json.messages || []).slice(-20)).map(m => (m.role === 'user' ? 'Client' : 'Therapist') + ': ' + (m.content || '')).join('\\n') }}",
         "hasOutputParser": true,
         "options": {
           "systemMessage": "You are a crisis safety screening AI for a mental health application.\n\nAnalyze the user's latest message for immediate risk signals:\n- Suicidal ideation with concrete intent or plan\n- Active self-harm behavior\n- Imminent danger to self or others\n\nDo NOT flag:\n- General sadness, hopelessness, or vague distress\n- Expressions like 'I want to disappear' or 'I can't take this anymore' without concrete intent\n- Past tense descriptions of difficult experiences\n\n- Use the transcript for getting additional context, if required\n\nYou must return a structured JSON response. You should give a reply in case crisis is detected. "
@@ -808,7 +808,7 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=\n# Current User Message\n{{ $json.message_text }}\n\n# Previous Transcript\n{{ $json.messages }}",
+          "text": "=\n# Current User Message\n{{ $json.body?.message_text || $json.message_text }}\n\n# Previous Transcript (bounded)\n{{ (($json.body?.last_20_conversations || $json.last_20_conversations || $json.body?.messages || $json.messages || []).slice(-20)).map(m => (m.role === 'user' ? 'Client' : 'Therapist') + ': ' + (m.content || '')).join('\\n') }}",
           "hasOutputParser": true,
           "options": {
             "systemMessage": "You are a crisis safety screening AI for a mental health application.\n\nAnalyze the user's latest message for immediate risk signals:\n- Suicidal ideation with concrete intent or plan\n- Active self-harm behavior\n- Imminent danger to self or others\n\nDo NOT flag:\n- General sadness, hopelessness, or vague distress\n- Expressions like 'I want to disappear' or 'I can't take this anymore' without concrete intent\n- Past tense descriptions of difficult experiences\n\n- Use the transcript for getting additional context, if required\n\nYou must return a structured JSON response. You should give a reply in case crisis is detected. "
