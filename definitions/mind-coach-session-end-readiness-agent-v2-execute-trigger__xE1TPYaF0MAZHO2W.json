@@ -1,0 +1,447 @@
+{
+  "updatedAt": "2026-03-28T09:07:36.606Z",
+  "createdAt": "2026-03-27T14:28:50.609Z",
+  "id": "xE1TPYaF0MAZHO2W",
+  "name": "Mind Coach - Session End Readiness Agent v2 (Execute Trigger)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a4f6bcca-d2cb-4a1b-9612-f1255c235bfc",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nconst root = $json || {};\nconst body = typeof root.body === 'string' ? (parseMaybeJson(root.body) || {}) : (root.body || {});\nconst d = (body && typeof body === 'object' && Object.keys(body).length > 0) ? body : root;\n\nconst pc = d.phase_context || {};\n\nconst systemPrompt = [\n  'You are a phase-readiness evaluator for structured therapy progression.',\n  'Assess readiness conservatively using phase context, transcript, assessments, mood, and risk signals.',\n  'Return ONLY valid JSON.'\n].join('\\n');\n\nconst userPrompt = [\n  'PHASE CONTEXT:', JSON.stringify({ current_phase: pc.current_phase || d.currentPhase || {}, next_phase: pc.next_phase || null, completed_in_current_phase: pc.completed_in_current_phase, target_sessions_in_current_phase: pc.target_sessions_in_current_phase, recent_case_notes: d.recent_case_notes || [], assessments: d.assessments || [], mood_entries: d.mood_entries || [] }),\n  '', 'MESSAGES:', JSON.stringify(d.messages || []),\n  '', 'TRANSCRIPT:', d.transcript || '',\n  '', 'Return JSON schema: {\"readiness_for_next_phase\":\"not_ready | approaching | ready\",\"risk_level\":\"low | medium | high | critical\",\"requires_escalation\":false,\"crisis_detected\":false,\"readiness_rationale\":\"string\",\"readiness_confidence\":0.0}'\n].join('\\n');\n\nreturn [{ json: { systemPrompt, userPrompt } }];"
+      },
+      "id": "ed393877-85a1-4ebe-999d-c0f376a73199",
+      "name": "Prompt Builder1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userPrompt }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "={{ $json.systemPrompt }}"
+        }
+      },
+      "id": "71179596-4ac5-49ee-86ec-c781e9fe0693",
+      "name": "Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        464,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "44bb1ca9-8f6b-4a19-bf2c-826198547c8d",
+      "name": "LLM1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        464,
+        704
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"readiness_for_next_phase\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"not_ready\",\n        \"approaching\",\n        \"ready\"\n      ]\n    },\n    \"risk_level\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"low\",\n        \"medium\",\n        \"high\",\n        \"critical\"\n      ]\n    },\n    \"requires_escalation\": {\n      \"type\": \"boolean\"\n    },\n    \"crisis_detected\": {\n      \"type\": \"boolean\"\n    },\n    \"readiness_rationale\": {\n      \"type\": \"string\"\n    },\n    \"readiness_confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"readiness_for_next_phase\",\n    \"risk_level\",\n    \"requires_escalation\",\n    \"crisis_detected\",\n    \"readiness_rationale\",\n    \"readiness_confidence\"\n  ]\n}"
+      },
+      "id": "bebfc960-d5d5-4143-9505-2bc9958bee13",
+      "name": "Structured Output Parser1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nfunction pickSource(payload) {\n  if (!payload || typeof payload !== 'object') return {};\n  if (payload.output && typeof payload.output === 'object') {\n    if (payload.output.output && typeof payload.output.output === 'object') return payload.output.output;\n    return payload.output;\n  }\n  const parsedOutput = parseMaybeJson(payload.output);\n  if (parsedOutput && typeof parsedOutput === 'object') return parsedOutput;\n  if (payload.data && typeof payload.data === 'object') return payload.data;\n  return payload;\n}\n\nconst source = pickSource($json);\nreturn [{\n  json: {\n    branch: 'readiness',\n    model: 'gpt-4o-mini',\n    readiness_for_next_phase: source.readiness_for_next_phase || 'not_ready',\n    risk_level: source.risk_level || 'low',\n    requires_escalation: Boolean(source.requires_escalation),\n    crisis_detected: Boolean(source.crisis_detected),\n    readiness_rationale: source.readiness_rationale || '',\n    readiness_confidence: typeof source.readiness_confidence === 'number' ? source.readiness_confidence : 0.5\n  }\n}];"
+      },
+      "id": "63b66ec7-ca8e-4870-867c-e23ad023de69",
+      "name": "Wrap Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        512
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prompt Builder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Builder1": {
+      "main": [
+        [
+          {
+            "node": "Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent1": {
+      "main": [
+        [
+          {
+            "node": "Wrap Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "session_id": "11111111-1111-1111-1111-111111111111",
+          "profile_id": "22222222-2222-2222-2222-222222222222",
+          "profile": {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "name": "Aarav",
+            "age": 29,
+            "gender": "male",
+            "concerns": [
+              "anxiety",
+              "overthinking"
+            ],
+            "therapist_persona": "maya"
+          },
+          "session": {
+            "pathway": "anxiety_and_stress_management",
+            "dynamic_theme": "Performance anxiety",
+            "session_number": 4
+          },
+          "phase_context": {
+            "current_phase_index": 1,
+            "total_phases": 4,
+            "current_phase": {
+              "phase_number": 2,
+              "name": "Cognitive Reframing",
+              "goal": "Identify and restructure anxious thought loops"
+            },
+            "next_phase": {
+              "phase_number": 3,
+              "name": "Behavioral Practice",
+              "goal": "Apply skills in real-world triggers"
+            },
+            "completed_in_current_phase": 2,
+            "target_sessions_in_current_phase": 3
+          },
+          "currentPhase": {
+            "phase_number": 2,
+            "name": "Cognitive Reframing",
+            "goal": "Identify and restructure anxious thought loops"
+          },
+          "messages": [
+            {
+              "role": "user",
+              "content": "I spiraled before my team presentation.",
+              "created_at": "2026-03-27T10:01:00.000Z"
+            },
+            {
+              "role": "assistant",
+              "content": "What thoughts showed up right before the spiral?",
+              "created_at": "2026-03-27T10:01:25.000Z"
+            },
+            {
+              "role": "user",
+              "content": "That everyone would think I am incompetent.",
+              "created_at": "2026-03-27T10:02:02.000Z"
+            }
+          ],
+          "transcript": "Client: I spiraled before my team presentation.\\nTherapist: What thoughts showed up right before the spiral?\\nClient: That everyone would think I am incompetent.",
+          "memories": [],
+          "current_memory": {
+            "memory_text": "Aarav experiences anticipatory anxiety before public speaking and tends to catastrophize peer judgment.",
+            "memory_type": "life_context",
+            "created_at": "2026-03-25T09:00:00.000Z"
+          },
+          "recent_case_notes": [
+            {
+              "dynamic_theme": "Fear of negative evaluation",
+              "phase_progress": "Can identify automatic thoughts but struggles to challenge them independently"
+            }
+          ],
+          "active_tasks": [
+            {
+              "task_type": "journaling",
+              "dynamic_title": "Thought log before meetings",
+              "dynamic_description": "Capture trigger-thought-emotion for each major meeting",
+              "status": "active"
+            }
+          ],
+          "assessments": [
+            {
+              "assessment_type": "gad7",
+              "total_score": 11,
+              "severity": "moderate",
+              "created_at": "2026-03-20T08:00:00.000Z"
+            }
+          ],
+          "mood_entries": [
+            {
+              "score": 5,
+              "notes": "Nervous before standup",
+              "created_at": "2026-03-26T07:45:00.000Z"
+            },
+            {
+              "score": 7,
+              "notes": "Felt better after breathing",
+              "created_at": "2026-03-27T11:00:00.000Z"
+            }
+          ],
+          "memory_workflow_id": "REPLACE_WITH_MEMORY_WORKFLOW_ID",
+          "summary_workflow_id": "REPLACE_WITH_SUMMARY_WORKFLOW_ID",
+          "readiness_workflow_id": "REPLACE_WITH_READINESS_WORKFLOW_ID"
+        }
+      }
+    ]
+  },
+  "versionId": "8b53e5e2-db59-4e92-8965-cad81b80d276",
+  "activeVersionId": "8b53e5e2-db59-4e92-8965-cad81b80d276",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-27T14:28:50.609Z",
+      "createdAt": "2026-03-27T14:28:50.609Z",
+      "role": "workflow:owner",
+      "workflowId": "xE1TPYaF0MAZHO2W",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-28T09:07:38.189Z",
+    "createdAt": "2026-03-28T09:07:36.608Z",
+    "versionId": "8b53e5e2-db59-4e92-8965-cad81b80d276",
+    "workflowId": "xE1TPYaF0MAZHO2W",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "a4f6bcca-d2cb-4a1b-9612-f1255c235bfc",
+        "name": "When Executed by Another Workflow",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nconst root = $json || {};\nconst body = typeof root.body === 'string' ? (parseMaybeJson(root.body) || {}) : (root.body || {});\nconst d = (body && typeof body === 'object' && Object.keys(body).length > 0) ? body : root;\n\nconst pc = d.phase_context || {};\n\nconst systemPrompt = [\n  'You are a phase-readiness evaluator for structured therapy progression.',\n  'Assess readiness conservatively using phase context, transcript, assessments, mood, and risk signals.',\n  'Return ONLY valid JSON.'\n].join('\\n');\n\nconst userPrompt = [\n  'PHASE CONTEXT:', JSON.stringify({ current_phase: pc.current_phase || d.currentPhase || {}, next_phase: pc.next_phase || null, completed_in_current_phase: pc.completed_in_current_phase, target_sessions_in_current_phase: pc.target_sessions_in_current_phase, recent_case_notes: d.recent_case_notes || [], assessments: d.assessments || [], mood_entries: d.mood_entries || [] }),\n  '', 'MESSAGES:', JSON.stringify(d.messages || []),\n  '', 'TRANSCRIPT:', d.transcript || '',\n  '', 'Return JSON schema: {\"readiness_for_next_phase\":\"not_ready | approaching | ready\",\"risk_level\":\"low | medium | high | critical\",\"requires_escalation\":false,\"crisis_detected\":false,\"readiness_rationale\":\"string\",\"readiness_confidence\":0.0}'\n].join('\\n');\n\nreturn [{ json: { systemPrompt, userPrompt } }];"
+        },
+        "id": "ed393877-85a1-4ebe-999d-c0f376a73199",
+        "name": "Prompt Builder1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          240,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.userPrompt }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "={{ $json.systemPrompt }}"
+          }
+        },
+        "id": "71179596-4ac5-49ee-86ec-c781e9fe0693",
+        "name": "Agent1",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.6,
+        "position": [
+          464,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "model": "gpt-4o-mini",
+          "options": {
+            "temperature": 0.2
+          }
+        },
+        "id": "44bb1ca9-8f6b-4a19-bf2c-826198547c8d",
+        "name": "LLM1",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1,
+        "position": [
+          464,
+          704
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "schemaType": "manual",
+          "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"readiness_for_next_phase\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"not_ready\",\n        \"approaching\",\n        \"ready\"\n      ]\n    },\n    \"risk_level\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"low\",\n        \"medium\",\n        \"high\",\n        \"critical\"\n      ]\n    },\n    \"requires_escalation\": {\n      \"type\": \"boolean\"\n    },\n    \"crisis_detected\": {\n      \"type\": \"boolean\"\n    },\n    \"readiness_rationale\": {\n      \"type\": \"string\"\n    },\n    \"readiness_confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"readiness_for_next_phase\",\n    \"risk_level\",\n    \"requires_escalation\",\n    \"crisis_detected\",\n    \"readiness_rationale\",\n    \"readiness_confidence\"\n  ]\n}"
+        },
+        "id": "bebfc960-d5d5-4143-9505-2bc9958bee13",
+        "name": "Structured Output Parser1",
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.2,
+        "position": [
+          608,
+          704
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nfunction pickSource(payload) {\n  if (!payload || typeof payload !== 'object') return {};\n  if (payload.output && typeof payload.output === 'object') {\n    if (payload.output.output && typeof payload.output.output === 'object') return payload.output.output;\n    return payload.output;\n  }\n  const parsedOutput = parseMaybeJson(payload.output);\n  if (parsedOutput && typeof parsedOutput === 'object') return parsedOutput;\n  if (payload.data && typeof payload.data === 'object') return payload.data;\n  return payload;\n}\n\nconst source = pickSource($json);\nreturn [{\n  json: {\n    branch: 'readiness',\n    model: 'gpt-4o-mini',\n    readiness_for_next_phase: source.readiness_for_next_phase || 'not_ready',\n    risk_level: source.risk_level || 'low',\n    requires_escalation: Boolean(source.requires_escalation),\n    crisis_detected: Boolean(source.crisis_detected),\n    readiness_rationale: source.readiness_rationale || '',\n    readiness_confidence: typeof source.readiness_confidence === 'number' ? source.readiness_confidence : 0.5\n  }\n}];"
+        },
+        "id": "63b66ec7-ca8e-4870-867c-e23ad023de69",
+        "name": "Wrap Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          768,
+          512
+        ]
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Prompt Builder1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prompt Builder1": {
+        "main": [
+          [
+            {
+              "node": "Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent1": {
+        "main": [
+          [
+            {
+              "node": "Wrap Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LLM1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser1": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Agent1",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Saksham Agrawal",
+    "name": "Version 8b53e5e2",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}

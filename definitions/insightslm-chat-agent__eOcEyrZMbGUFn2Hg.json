@@ -1,0 +1,515 @@
+{
+  "updatedAt": "2026-03-28T04:46:53.922Z",
+  "createdAt": "2025-12-18T15:20:33.532Z",
+  "id": "eOcEyrZMbGUFn2Hg",
+  "name": "InsightsLm Chat Agent",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "192d318f-7bac-4220-b871-b272f9e50930",
+      "name": "Webhook",
+      "webhookId": "1886ac0c-3378-4504-ad48-a7501f9d8aa4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lUBq76JGBJQGYD8c",
+          "name": "InsightsLm_Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n\"notebook_id\": \"{{ $('Webhook').item.json.body.notebook_id }}\" ,\n\"session_id\": \"{{ $('Webhook').item.json.body.session_id }}\",\n\"summary\" : {{ JSON.stringify($json.output.Response) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "id": "e9086788-016e-4232-ba33-e306fa857e95",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini-2025-04-14"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        256
+      ],
+      "id": "6d0b7b69-8c74-4f1b-9195-1715bd94c182",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Question\": \"The Little Robot's Flower\",\n  \"Response\": \"In a city made of chrome, a small robot named Beep found a single dandelion growing through a crack in the pavement. While the other robots built skyscrapers, Beep spent his days shielding the flower from the acid rain. Eventually, the flower turned into a seed puff, and Beep realized he hadn't just saved one flower, but a whole future garden.\",\n  \"word_count\": 63\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        320
+      ],
+      "id": "12be8e97-87ac-491c-a54f-521ff62191cb",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "This tool retrieves the notebook information in the Pinecone Database",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "insightslm",
+          "mode": "list",
+          "cachedResultName": "insightslm"
+        },
+        "topK": 20,
+        "options": {
+          "pineconeNamespace": "={{ $json.body.notebook_id }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        320
+      ],
+      "id": "08b7b119-ac79-4ead-a60a-dbb85e7dd7be",
+      "name": "NotebookLM Data retrieval",
+      "credentials": {
+        "pineconeApi": {
+          "id": "Z208IOylzyj0Pwbt",
+          "name": "Pinecone Vector Saksham"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 512
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        496
+      ],
+      "id": "6f66d2cb-2926-40d0-89c0-fef5cd2df519",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert academic and a an pleaseant assistant and guide to the user. You are to respond to the user's query with the data present in the notebook and notebook only.\nA notebook is a collection of files, which the user is uploading data to and which is saved in Pinecone Namespace. This can be accessed with the tool NotebookLM Data retrieval\n\nUser Question : {{ $json.body.message }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        192,
+        16
+      ],
+      "id": "fdd74747-0f38-4cc0-bb23-635f81629eae",
+      "name": "AI Chat Agent"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Chat Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Chat Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Chat Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NotebookLM Data retrieval": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Chat Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "NotebookLM Data retrieval",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Chat Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.saksham-experiments.com",
+            "user-agent": "Deno/2.1.4 (variant; SupabaseEdgeRuntime/1.69.25)",
+            "content-length": "136",
+            "accept": "*/*",
+            "accept-encoding": "gzip,br",
+            "accept-language": "*",
+            "content-type": "application/json",
+            "x-forwarded-for": "15.206.208.233",
+            "x-forwarded-host": "n8n.saksham-experiments.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f2d6a5423096",
+            "x-n8n-secret": "mTuhEe3JKWUxmUnG",
+            "x-real-ip": "15.206.208.233"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "point": "chat",
+            "message": "Hi",
+            "notebook_id": "382d231f-7da8-4345-a693-c2348fe82a14",
+            "session_id": "275bad20-e15c-432d-8a4b-3cbc3dbe3e34"
+          },
+          "webhookUrl": "https://n8n.saksham-experiments.com/webhook/chat",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "8423adc6-e59e-4ad3-9025-c34d0543516d",
+  "activeVersionId": "3d7b2697-80e6-44ed-81a3-940b9b546a9f",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-18T15:20:33.532Z",
+      "createdAt": "2025-12-18T15:20:33.532Z",
+      "role": "workflow:owner",
+      "workflowId": "eOcEyrZMbGUFn2Hg",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-18T16:33:56.053Z",
+    "createdAt": "2025-12-18T15:21:48.010Z",
+    "versionId": "3d7b2697-80e6-44ed-81a3-940b9b546a9f",
+    "workflowId": "eOcEyrZMbGUFn2Hg",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "chat",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "192d318f-7bac-4220-b871-b272f9e50930",
+        "name": "Webhook",
+        "webhookId": "1886ac0c-3378-4504-ad48-a7501f9d8aa4",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "lUBq76JGBJQGYD8c",
+            "name": "InsightsLm_Auth"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\n\"notebook_id\": \"{{ $('Webhook').item.json.body.notebook_id }}\" ,\n\"source_id\": \"{{ $('Webhook').item.json.body.source_id }}\",\n\"status\" : \"processed\",\n\"summary\" : {{ JSON.stringify($json.output.Summary) }}\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          560,
+          0
+        ],
+        "id": "e9086788-016e-4232-ba33-e306fa857e95",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini-2025-04-14",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini-2025-04-14"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          128,
+          256
+        ],
+        "id": "6d0b7b69-8c74-4f1b-9195-1715bd94c182",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"title\": \"The Little Robot's Flower\",\n  \"Summary\": \"In a city made of chrome, a small robot named Beep found a single dandelion growing through a crack in the pavement. While the other robots built skyscrapers, Beep spent his days shielding the flower from the acid rain. Eventually, the flower turned into a seed puff, and Beep realized he hadn't just saved one flower, but a whole future garden.\",\n  \"word_count\": 63\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          528,
+          320
+        ],
+        "id": "12be8e97-87ac-491c-a54f-521ff62191cb",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "This tool retrieves the notebook information in the Pinecone Database",
+          "pineconeIndex": {
+            "__rl": true,
+            "value": "insightslm",
+            "mode": "list",
+            "cachedResultName": "insightslm"
+          },
+          "topK": 20,
+          "options": {
+            "pineconeNamespace": "={{ $('HTTP Request').item.json.body.notebook_id }}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+        "typeVersion": 1.3,
+        "position": [
+          256,
+          320
+        ],
+        "id": "08b7b119-ac79-4ead-a60a-dbb85e7dd7be",
+        "name": "NotebookLM Data retrieval",
+        "credentials": {
+          "pineconeApi": {
+            "id": "Z208IOylzyj0Pwbt",
+            "name": "Pinecone Vector Saksham"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {
+            "dimensions": 512
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          240,
+          496
+        ],
+        "id": "6f66d2cb-2926-40d0-89c0-fef5cd2df519",
+        "name": "Embeddings OpenAI1",
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=You are an expert academic and a an pleaseant orator. You are to create a 50-75 word summary of the notebook data you have been provided. \nA notebook is a collection of files, which the user is uploading data to and which is saved in Pinecone Namespace. This can be accessed with the tool \n\nYou are to provide a summary for the full namespace, with particular emphasis on the latest file loaded. The data of the latest file being:\nTitle: {{ $('HTTP Request').item.json.body.file_name }} \nContent: {{ $json.pageContent }}",
+          "hasOutputParser": true,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          208,
+          0
+        ],
+        "id": "fdd74747-0f38-4cc0-bb23-635f81629eae",
+        "name": "Summary Generator"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Summary Generator",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Summary Generator",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Summary Generator",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "NotebookLM Data retrieval": {
+        "ai_tool": [
+          [
+            {
+              "node": "Summary Generator",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI1": {
+        "ai_embedding": [
+          [
+            {
+              "node": "NotebookLM Data retrieval",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Summary Generator": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Saksham Agrawal",
+    "name": "Version 3d7b2697",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-14T15:33:32.742Z",
+      "createdAt": "2025-12-14T15:33:32.742Z",
+      "id": "dowhSEz7Kg61JxrP",
+      "name": "Product Portfolio"
+    },
+    {
+      "updatedAt": "2025-12-14T15:33:41.492Z",
+      "createdAt": "2025-12-14T15:33:41.492Z",
+      "id": "3S8y4ELDYElHJs5G",
+      "name": "Insights LM"
+    }
+  ]
+}

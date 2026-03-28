@@ -1,0 +1,1584 @@
+{
+  "updatedAt": "2026-03-28T04:46:08.969Z",
+  "createdAt": "2026-02-27T21:44:25.760Z",
+  "id": "9GaGrmxlOtPD3PDm",
+  "name": "Lab Report Processing",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fbf6b968-5838-4590-ae61-4b754c50843a",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "783d3d2f-4226-4d18-a9f8-d2657e66acc7",
+      "name": "Webhook",
+      "webhookId": "fbf6b968-5838-4590-ae61-4b754c50843a",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lUBq76JGBJQGYD8c",
+          "name": "InsightsLm_Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.file_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f87c396b-f467-41ac-9545-ae500d0d96bb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "I have attached a lab report (either an image or PDF). Read the document using your vision capabilities. Extract all lab test results exactly as written on the page into a JSON array containing raw_name, value, and unit and recorded_at . Do not standardize names. Use a value of 0 if no value exists. recorded_at is the date of the lab report ie the date on which the lab report analysis was done. In case the date is not present, use today as date.",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        752,
+        -80
+      ],
+      "id": "dc8ad317-dc7d-4d17-a8d9-a4712d121e3b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"parameters\": [\n    {\n      \"parameter_name\": \"Erythrocyte Count\",\n      \"parameter_value\": 4.5,\n      \"unit\": \"million/cmm\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    },\n    {\n      \"parameter_name\": \"Hemoglobin\",\n      \"parameter_value\": 14.2,\n      \"unit\": \"g/dL\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        128
+      ],
+      "id": "b51ca242-d714-451d-826b-7f81b069ac0d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        112
+      ],
+      "id": "29b99a01-9c0b-4918-96ed-33dcaac217ee",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        -16
+      ],
+      "id": "84d23d35-05d1-4f93-aecd-98a06a84d385",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT name FROM health_parameter_definitions WHERE category = 'Lab Report Parameter'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        -384
+      ],
+      "id": "e9a1018b-8f29-4299-ae4e-4029938fca95",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#Extracted Raw Names\n{{ JSON.stringify($json.output.parameters, null, 2) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Map each raw_name to the semantically closest officially allowed parameter name. If a raw_name does not logically match any allowed name, drop it completely. Return the final mapped array containing parameter_name, parameter_value, unit, and the preserved recorded_at timestamp exact match.\n\n#Names of allowed parameters\n{{ JSON.stringify($json['allowed Parameter Names'], null, 2) }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1472,
+        -176
+      ],
+      "id": "e47493ac-4c4b-47cd-9606-730c31d984c1",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1456,
+        16
+      ],
+      "id": "3b6f63b8-4743-4f99-96e3-112904683972",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"parameters\": [\n    {\n      \"parameter_name\": \"Erythrocyte Count\",\n      \"parameter_value\": 4.5,\n      \"unit\": \"million/cmm\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    },\n    {\n      \"parameter_name\": \"Hemoglobin\",\n      \"parameter_value\": 14.2,\n      \"unit\": \"g/dL\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        32
+      ],
+      "id": "fd5b02a4-7096-4985-94f4-c03dace30a88",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2064,
+        -176
+      ],
+      "id": "1ecb5303-70c8-4ece-b0b6-c4ec5262a8dc",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        -176
+      ],
+      "id": "37b03218-949a-4481-b091-23e5a5f65fb5",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "=allowed Parameter Names",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -384
+      ],
+      "id": "67ca6c92-cc22-438e-90bb-16c6495195a0",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        -144
+      ],
+      "id": "9d5e14a5-aaf6-4efe-97a1-0c9e44a90d1a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2a5fc94-fb55-459e-91f1-d4201f1bd88e",
+              "name": "body.file_id",
+              "value": "={{ $('Webhook').item.json.body.file_id }}",
+              "type": "string"
+            },
+            {
+              "id": "7f8e1291-1174-4f2d-b61f-af5adb925ceb",
+              "name": "body.twin_id",
+              "value": "={{ $('Webhook').item.json.body.twin_id }}",
+              "type": "string"
+            },
+            {
+              "id": "268c684c-804d-4331-9e2a-9e2c3c9fd478",
+              "name": "body.output.parameters",
+              "value": "={{ JSON.stringify($json.output.parameters) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1840,
+        -176
+      ],
+      "id": "3229e106-8b53-4ac7-a733-c00cd209a332",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.saksham-experiments.com",
+            "user-agent": "Deno/2.1.4 (variant; SupabaseEdgeRuntime/1.70.5)",
+            "content-length": "746",
+            "accept": "*/*",
+            "accept-encoding": "gzip,br",
+            "accept-language": "*",
+            "content-type": "application/json",
+            "x-forwarded-for": "13.201.118.21",
+            "x-forwarded-host": "n8n.saksham-experiments.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "f2d6a5423096",
+            "x-n8n-secret": "mTuhEe3JKWUxmUnG",
+            "x-real-ip": "13.201.118.21"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "file_id": "b7c96fcf-18ab-442a-bcd9-2edb6df5cbaa",
+            "twin_id": "ed57fa1e-450b-4b08-806b-bbbe3d2b24d2",
+            "file_url": "https://ralhkmpbslsdkwnqzqen.supabase.co/storage/v1/object/public/health_documents/sakshamagrawal1993/2887900b-e109-4380-9f4d-304926bec38c/B131.pdf",
+            "source_type": "pdf",
+            "file_name": "Form_pdf_379448810070723 (1).pdf"
+          },
+          "webhookUrl": "https://n8n.saksham-experiments.com/webhook/7b9bb8e0-68fa-463f-87f2-2cf0bb1db4e6",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Merge": [
+      {
+        "json": {
+          "allowed Parameter Names": [
+            {
+              "name": "Albumin, Serum"
+            },
+            {
+              "name": "Alkaline Phosphatase, Serum"
+            },
+            {
+              "name": "Bilirubin Direct, Serum"
+            },
+            {
+              "name": "Bilirubin Total, Serum"
+            },
+            {
+              "name": "GGTP (Gamma GT), Serum"
+            },
+            {
+              "name": "Proteins, Serum"
+            },
+            {
+              "name": "SGOT/AST"
+            },
+            {
+              "name": "SGPT/ALT"
+            },
+            {
+              "name": "Bilirubin- Indirect, Serum"
+            },
+            {
+              "name": "Globulin"
+            },
+            {
+              "name": "A/G Ratio"
+            },
+            {
+              "name": "LDH (Lactate Dehydrogenase)"
+            },
+            {
+              "name": "BUN Urea Nitrogen, Serum"
+            },
+            {
+              "name": "Calcium Total, Serum"
+            },
+            {
+              "name": "Chlorides, Serum"
+            },
+            {
+              "name": "Creatinine, Serum"
+            },
+            {
+              "name": "Phosphorus-Inorganic, Serum"
+            },
+            {
+              "name": "Sodium, Serum"
+            },
+            {
+              "name": "Urea, Serum"
+            },
+            {
+              "name": "Uric Acid, Serum"
+            },
+            {
+              "name": "BUN/Creatinine Ratio"
+            },
+            {
+              "name": "Urea/Creatinine Ratio"
+            },
+            {
+              "name": "EGFR"
+            },
+            {
+              "name": "POTASSIUM"
+            },
+            {
+              "name": "Estimated average glucose"
+            },
+            {
+              "name": "Glycated Hemoglobin (HbA1c)"
+            },
+            {
+              "name": "Random blood glucose"
+            },
+            {
+              "name": "Fasting Blood Sugar"
+            },
+            {
+              "name": "Blood Ketone (beta hb)"
+            },
+            {
+              "name": "Fructosamine"
+            },
+            {
+              "name": "Fasting Insulin"
+            },
+            {
+              "name": "Urinary Microalbumin"
+            },
+            {
+              "name": "pH Urine"
+            },
+            {
+              "name": "Urine Specific gravity"
+            },
+            {
+              "name": "Urine Urobilinogen"
+            },
+            {
+              "name": "Urine Colour"
+            },
+            {
+              "name": "Urine Transparency"
+            },
+            {
+              "name": "Urine Blood - Dip stick"
+            },
+            {
+              "name": "Urine Blood"
+            },
+            {
+              "name": "Urine Red Blood Cells"
+            },
+            {
+              "name": "Urine Pus cells (Leukocytes)"
+            },
+            {
+              "name": "Urine Epithelial cells"
+            },
+            {
+              "name": "Urine Epithelial cells /hpf"
+            },
+            {
+              "name": "Urine Crystals"
+            },
+            {
+              "name": "Urine Cast"
+            },
+            {
+              "name": "Urine Bacteria"
+            },
+            {
+              "name": "Urine Yeast Cells"
+            },
+            {
+              "name": "Urine Nitrate"
+            },
+            {
+              "name": "URINE KETONE"
+            },
+            {
+              "name": "URINE PROTEIN"
+            },
+            {
+              "name": "Urine Leucocyte Esterase"
+            },
+            {
+              "name": "Urine Bile Pigments (Bilirubin)"
+            },
+            {
+              "name": "Volume - Urine  24 hrs"
+            },
+            {
+              "name": "Volume - Urine"
+            },
+            {
+              "name": "Urine Creatinine"
+            },
+            {
+              "name": "Urine Albumin / Creatinine Ratio"
+            },
+            {
+              "name": "Urine Amorphous phosphate crystals"
+            },
+            {
+              "name": "Urine Amorphous urates crystals"
+            },
+            {
+              "name": "Urine Ascorbic Acid"
+            },
+            {
+              "name": "Urine Calcium  dihydrate crystals"
+            },
+            {
+              "name": "Urine Crystals unidentified"
+            },
+            {
+              "name": "Urine Calcium oxalate monohydrate crystals"
+            },
+            {
+              "name": "Urine Calcium Phosphate"
+            },
+            {
+              "name": "Urine Cystine crystals"
+            },
+            {
+              "name": "Urine Fatty casts"
+            },
+            {
+              "name": "Urine Granular casts"
+            },
+            {
+              "name": "Urine Hyaline casts"
+            },
+            {
+              "name": "Urine Renal tubular casts"
+            },
+            {
+              "name": "Urine Ammonium urate crystals"
+            },
+            {
+              "name": "Urine RBC Casts"
+            },
+            {
+              "name": "Urine Mucus"
+            },
+            {
+              "name": "Urine Triple Phosphate crystals"
+            },
+            {
+              "name": "Urine Tyrosine crystals"
+            },
+            {
+              "name": "Urine Uric acid crystals"
+            },
+            {
+              "name": "Urine Waxy casts"
+            },
+            {
+              "name": "Urine WBC casts"
+            },
+            {
+              "name": "Absolute Basophils Count, Blood"
+            },
+            {
+              "name": "Absolute Eosinophil Count, Blood"
+            },
+            {
+              "name": "Absolute Lymphocyte Count, Blood"
+            },
+            {
+              "name": "Absolute Monocyte Count, Blood"
+            },
+            {
+              "name": "Absolute Neutrophil Count, Blood"
+            },
+            {
+              "name": "Hemoglobin Hb"
+            },
+            {
+              "name": "E.S.R. (WESTERGREN)"
+            },
+            {
+              "name": "MCH"
+            },
+            {
+              "name": "MCHC"
+            },
+            {
+              "name": "MCV"
+            },
+            {
+              "name": "MPV Mean Platelet Volume"
+            },
+            {
+              "name": "PCV Haematocrit"
+            },
+            {
+              "name": "Platelet Count Thrombocyte count"
+            },
+            {
+              "name": "WBC-Total Counts Leucocytes"
+            },
+            {
+              "name": "RDW (Red Cell Distribution Width) RDW-CV"
+            },
+            {
+              "name": "Red Blood Cells - Blood"
+            },
+            {
+              "name": "Immature Granulocytes(Ig)"
+            },
+            {
+              "name": "Immature Granulocyte Percentage(Ig%)"
+            },
+            {
+              "name": "Lymphocyte Percentage"
+            },
+            {
+              "name": "Nucleated Red Blood Cells %"
+            },
+            {
+              "name": "Nucleated Red Blood Cells"
+            },
+            {
+              "name": "SEGMENTED NEUTROPHILS"
+            },
+            {
+              "name": "Cholesterol-Total, Serum"
+            },
+            {
+              "name": "HDL Cholesterol Direct"
+            },
+            {
+              "name": "Triglycerides, Serum"
+            },
+            {
+              "name": "Non - HDL Cholesterol, Serum"
+            },
+            {
+              "name": "CHOL/HDL RATIO"
+            },
+            {
+              "name": "LDL Cholesterol Cal"
+            },
+            {
+              "name": "VLDL Cholesterol Cal"
+            },
+            {
+              "name": "LDL / HDL Cholesterol Ratio Cal"
+            },
+            {
+              "name": "HDL / LDL Cholesterol Ratio Cal"
+            },
+            {
+              "name": "Ldl Cholesterol - Direct"
+            },
+            {
+              "name": "Vitamin B12 Cyanocobalamin"
+            },
+            {
+              "name": "Vitamin D Total-25 Hydroxy"
+            },
+            {
+              "name": "Vitamin D2"
+            },
+            {
+              "name": "Vitamin D3"
+            },
+            {
+              "name": "Vitamin A"
+            },
+            {
+              "name": "Vitamin B1/thiamin"
+            },
+            {
+              "name": "Vitamin B2/riboflavin"
+            },
+            {
+              "name": "Vitamin B3/nicotinic Acid"
+            },
+            {
+              "name": "Vitamin B5/pantothenic"
+            },
+            {
+              "name": "Vitamin B6/pyridoxal - 5 - Phosphate"
+            },
+            {
+              "name": "Vitamin B7/biotin"
+            },
+            {
+              "name": "Vitamin B9/folic Acid"
+            },
+            {
+              "name": "Vitamin E"
+            },
+            {
+              "name": "Vitamin K"
+            },
+            {
+              "name": "APO B : APO A1 RATIO"
+            },
+            {
+              "name": "Apolipoproteins A1, Serum"
+            },
+            {
+              "name": "Apolipoproteins B, Serum"
+            },
+            {
+              "name": "High Sensitivity C-reactive Protein (Hs-crp)"
+            },
+            {
+              "name": "Lipoprotein (a) [lp(a)]"
+            },
+            {
+              "name": "ESR Automated"
+            },
+            {
+              "name": "% Transferrin Saturation"
+            },
+            {
+              "name": "Total Iron Binding Capacity (Tibc)"
+            },
+            {
+              "name": "SERUM IRON"
+            },
+            {
+              "name": "UIBC, Serum"
+            },
+            {
+              "name": "Ferritin"
+            },
+            {
+              "name": "Thyroid stimulating immunoglobulins"
+            },
+            {
+              "name": "Thyroxine binding globulin"
+            },
+            {
+              "name": "free t3"
+            },
+            {
+              "name": "free t4"
+            },
+            {
+              "name": "T3, Total Tri Iodothyronine"
+            },
+            {
+              "name": "T4, Total Thyroxine"
+            },
+            {
+              "name": "TSH Ultra - Sensitive"
+            },
+            {
+              "name": "Thyroglobulin Ab"
+            },
+            {
+              "name": "Thyroperoxidase Ab"
+            },
+            {
+              "name": "Silver"
+            },
+            {
+              "name": "Aluminium"
+            },
+            {
+              "name": "Arsenic"
+            },
+            {
+              "name": "Barium"
+            },
+            {
+              "name": "Beryllium"
+            },
+            {
+              "name": "Bismuth"
+            },
+            {
+              "name": "Cadmium"
+            },
+            {
+              "name": "Cobalt"
+            },
+            {
+              "name": "Chromium"
+            },
+            {
+              "name": "Caesium"
+            },
+            {
+              "name": "Mercury"
+            },
+            {
+              "name": "Manganese"
+            },
+            {
+              "name": "Molybdenum"
+            },
+            {
+              "name": "Nickel"
+            },
+            {
+              "name": "Lead"
+            },
+            {
+              "name": "Antimony"
+            },
+            {
+              "name": "Selenium"
+            },
+            {
+              "name": "Tin"
+            },
+            {
+              "name": "Strontium"
+            },
+            {
+              "name": "Thallium"
+            },
+            {
+              "name": "Uranium"
+            },
+            {
+              "name": "Vanadium"
+            },
+            {
+              "name": "Serum Copper"
+            },
+            {
+              "name": "Serum Zinc"
+            },
+            {
+              "name": "Cystatin C"
+            },
+            {
+              "name": "Magnesium"
+            },
+            {
+              "name": "Anti Ccp (Accp)"
+            },
+            {
+              "name": "Anti Nuclear Antibodies (Ana)"
+            },
+            {
+              "name": "Cortisol"
+            },
+            {
+              "name": "Deoxycortisol"
+            },
+            {
+              "name": "Dehydroepiandrosterone"
+            },
+            {
+              "name": "Dhea - Sulphate (Dheas)"
+            },
+            {
+              "name": "Progesterone"
+            },
+            {
+              "name": "FIB-4 INDEX"
+            },
+            {
+              "name": "AMYLASE PANCREATIC SERUM"
+            },
+            {
+              "name": "Parathyroid Hormone (PTH)"
+            },
+            {
+              "name": "Glucose 6 phosphate Dehydrogenase (G6PD )"
+            },
+            {
+              "name": "Prostate Specific Antigen (Male)"
+            },
+            {
+              "name": "Testosterone"
+            },
+            {
+              "name": "Rheumatoid Factor"
+            },
+            {
+              "name": "HbsAg"
+            },
+            {
+              "name": "HbsAb"
+            },
+            {
+              "name": "CRP"
+            },
+            {
+              "name": "HCV IgG - Clia"
+            },
+            {
+              "name": "Lipase"
+            },
+            {
+              "name": "Amylase"
+            },
+            {
+              "name": "Custom Metric"
+            }
+          ],
+          "output": {
+            "parameters": [
+              {
+                "parameter_name": "Cholesterol Total (CHO-POD)",
+                "parameter_value": 150,
+                "unit": "mg/dL",
+                "recorded_at": "22/7/2025 1:23:41PM"
+              },
+              {
+                "parameter_name": "Triglycerides (GPO-POD)",
+                "parameter_value": 145,
+                "unit": "mg/dL",
+                "recorded_at": "22/7/2025 1:23:41PM"
+              },
+              {
+                "parameter_name": "HDL Cholesterol (Enz Immunoinhibition)",
+                "parameter_value": 44,
+                "unit": "mg/dL",
+                "recorded_at": "22/7/2025 1:23:41PM"
+              },
+              {
+                "parameter_name": "LDL Cholesterol,Direct (Enz Selective protection)",
+                "parameter_value": 41,
+                "unit": "mg/dL",
+                "recorded_at": "22/7/2025 1:23:41PM"
+              },
+              {
+                "parameter_name": "VLDL Cholesterol (Calculated)",
+                "parameter_value": 29,
+                "unit": "mg/dL",
+                "recorded_at": "22/7/2025 1:23:41PM"
+              },
+              {
+                "parameter_name": "Non-HDL Cholesterol (Calculated)",
+                "parameter_value": 106,
+                "unit": "mg/dL",
+                "recorded_at": "22/7/2025 1:23:41PM"
+              }
+            ]
+          }
+        },
+        "binary": {},
+        "pairedItem": [
+          {
+            "item": 0
+          },
+          {
+            "item": 0,
+            "input": 1
+          },
+          {
+            "item": 0,
+            "input": 1
+          }
+        ]
+      }
+    ]
+  },
+  "versionId": "fd825539-fbac-424f-9386-83600b98250e",
+  "activeVersionId": "fd825539-fbac-424f-9386-83600b98250e",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-27T21:44:25.760Z",
+      "createdAt": "2026-02-27T21:44:25.760Z",
+      "role": "workflow:owner",
+      "workflowId": "9GaGrmxlOtPD3PDm",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-28T07:46:56.919Z",
+    "createdAt": "2026-02-28T07:46:54.890Z",
+    "versionId": "fd825539-fbac-424f-9386-83600b98250e",
+    "workflowId": "9GaGrmxlOtPD3PDm",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "fbf6b968-5838-4590-ae61-4b754c50843a",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "783d3d2f-4226-4d18-a9f8-d2657e66acc7",
+        "name": "Webhook",
+        "webhookId": "fbf6b968-5838-4590-ae61-4b754c50843a",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "lUBq76JGBJQGYD8c",
+            "name": "InsightsLm_Auth"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.body.file_url }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          208,
+          0
+        ],
+        "id": "f87c396b-f467-41ac-9545-ae500d0d96bb",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.text }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "I have attached a lab report (either an image or PDF). Read the document using your vision capabilities. Extract all lab test results exactly as written on the page into a JSON array containing raw_name, value, and unit and recorded_at . Do not standardize names. Use a value of 0 if no value exists. recorded_at is the date of the lab report ie the date on which the lab report analysis was done. In case the date is not present, use today as date.",
+            "passthroughBinaryImages": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          752,
+          -80
+        ],
+        "id": "dc8ad317-dc7d-4d17-a8d9-a4712d121e3b",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"parameters\": [\n    {\n      \"parameter_name\": \"Erythrocyte Count\",\n      \"parameter_value\": 4.5,\n      \"unit\": \"million/cmm\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    },\n    {\n      \"parameter_name\": \"Hemoglobin\",\n      \"parameter_value\": 14.2,\n      \"unit\": \"g/dL\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    }\n  ]\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          832,
+          128
+        ],
+        "id": "b51ca242-d714-451d-826b-7f81b069ac0d",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-5-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          624,
+          112
+        ],
+        "id": "29b99a01-9c0b-4918-96ed-33dcaac217ee",
+        "name": "OpenAI Chat Model1",
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "pdf",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1.1,
+        "position": [
+          528,
+          -16
+        ],
+        "id": "84d23d35-05d1-4f93-aecd-98a06a84d385",
+        "name": "Extract from File"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT name FROM health_parameter_definitions WHERE category = 'Lab Report Parameter'",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          864,
+          -384
+        ],
+        "id": "e9a1018b-8f29-4299-ae4e-4029938fca95",
+        "name": "Execute a SQL query",
+        "credentials": {
+          "postgres": {
+            "id": "TzhNsURks708nQk6",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=#Extracted Raw Names\n{{ JSON.stringify($json.output.parameters, null, 2) }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=Map each raw_name to the semantically closest officially allowed parameter name. If a raw_name does not logically match any allowed name, drop it completely. Return the final mapped array containing parameter_name, parameter_value, unit, and the preserved recorded_at timestamp exact match.\n\n#Names of allowed parameters\n{{ JSON.stringify($json['allowed Parameter Names'], null, 2) }}\n"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1472,
+          -176
+        ],
+        "id": "e47493ac-4c4b-47cd-9606-730c31d984c1",
+        "name": "AI Agent1"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1456,
+          16
+        ],
+        "id": "3b6f63b8-4743-4f99-96e3-112904683972",
+        "name": "OpenAI Chat Model2",
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"parameters\": [\n    {\n      \"parameter_name\": \"Erythrocyte Count\",\n      \"parameter_value\": 4.5,\n      \"unit\": \"million/cmm\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    },\n    {\n      \"parameter_name\": \"Hemoglobin\",\n      \"parameter_value\": 14.2,\n      \"unit\": \"g/dL\",\n      \"recorded_at\": \"2024-03-10T11:00:00.000Z\"\n    }\n  ]\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          1648,
+          32
+        ],
+        "id": "fd5b02a4-7096-4985-94f4-c03dace30a88",
+        "name": "Structured Output Parser1"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2064,
+          -176
+        ],
+        "id": "1ecb5303-70c8-4ece-b0b6-c4ec5262a8dc",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          2320,
+          -176
+        ],
+        "id": "37b03218-949a-4481-b091-23e5a5f65fb5",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "aggregate": "aggregateAllItemData",
+          "destinationFieldName": "=allowed Parameter Names",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          1184,
+          -384
+        ],
+        "id": "67ca6c92-cc22-438e-90bb-16c6495195a0",
+        "name": "Aggregate"
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          1184,
+          -144
+        ],
+        "id": "9d5e14a5-aaf6-4efe-97a1-0c9e44a90d1a",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a2a5fc94-fb55-459e-91f1-d4201f1bd88e",
+                "name": "body.file_id",
+                "value": "={{ $('Webhook').item.json.body.file_id }}",
+                "type": "string"
+              },
+              {
+                "id": "7f8e1291-1174-4f2d-b61f-af5adb925ceb",
+                "name": "body.twin_id",
+                "value": "={{ $('Webhook').item.json.body.twin_id }}",
+                "type": "string"
+              },
+              {
+                "id": "268c684c-804d-4331-9e2a-9e2c3c9fd478",
+                "name": "body.output.parameters",
+                "value": "={{ JSON.stringify($json.output.parameters) }}",
+                "type": "array"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1840,
+          -176
+        ],
+        "id": "3229e106-8b53-4ac7-a733-c00cd209a332",
+        "name": "Edit Fields"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Extract from File",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Execute a SQL query",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Extract from File": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execute a SQL query": {
+        "main": [
+          [
+            {
+              "node": "Aggregate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser1": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent1": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Webhook": {
+        "main": [
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Saksham Agrawal",
+    "name": "Version fd825539",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}

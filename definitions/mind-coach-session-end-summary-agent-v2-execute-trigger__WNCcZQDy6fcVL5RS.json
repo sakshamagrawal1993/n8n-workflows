@@ -1,0 +1,447 @@
+{
+  "updatedAt": "2026-03-28T09:05:34.976Z",
+  "createdAt": "2026-03-27T14:28:09.047Z",
+  "id": "WNCcZQDy6fcVL5RS",
+  "name": "Mind Coach - Session End Summary Agent v2 (Execute Trigger)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "dc5b8ea9-58a1-4e7d-b875-406ceb8f4565",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nconst root = $json || {};\nconst body = typeof root.body === 'string' ? (parseMaybeJson(root.body) || {}) : (root.body || {});\nconst d = (body && typeof body === 'object' && Object.keys(body).length > 0) ? body : root;\n\nconst systemPrompt = [\n  'You are a clinical supervisor generating post-session summary and tasks.',\n  'Use transcript + profile + phase context + assessments + tasks + mood context.',\n  'If pathway is not yet selected, include case_notes_base.suggested_pathway when confident.',\n  'No date hallucinations. Return ONLY valid JSON.'\n].join('\\n');\n\nconst userPrompt = [\n  'SESSION CONTEXT:', JSON.stringify({ profile: d.profile || {}, session: d.session || {}, phase_context: d.phase_context || {}, active_tasks: d.active_tasks || [], assessments: d.assessments || [], mood_entries: d.mood_entries || [] }),\n  '', 'MESSAGES:', JSON.stringify(d.messages || []),\n  '', 'TRANSCRIPT:', d.transcript || '',\n  '', 'Return JSON schema:',\n  '{',\n  '  \"case_notes_base\": { \"presenting_concern\": \"string\", \"dynamic_theme\": \"string\", \"phase_progress\": \"string\", \"suggested_pathway\": \"string | null\" },',\n  '  \"session_summary\": { \"title\": \"string\", \"opening_reflection\": \"string\", \"quote_of_the_day\": \"string\", \"energy_shift\": { \"start\": \"string\", \"end\": \"string\" }, \"psychological_flexibility\": { \"self_awareness\": 0, \"observation\": 0, \"physical_awareness\": 0, \"core_values\": 0, \"relationships\": 0 }, \"self_compassion_score\": 0 },',\n  '  \"extracted_tasks\": [{ \"task_type\": \"journaling | somatic_exercise | cognitive_reframing | behavioral_exposure | situational_prep | general\", \"dynamic_title\": \"string\", \"dynamic_description\": \"string\", \"frequency\": \"daily | weekly | situational | once\", \"suggested_duration_days\": 7 }]',\n  '}'\n].join('\\n');\n\nreturn [{ json: { systemPrompt, userPrompt } }];"
+      },
+      "id": "e7b233bd-a359-4c1a-a678-2f8b315d9fb8",
+      "name": "Prompt Builder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userPrompt }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "={{ $json.systemPrompt }}"
+        }
+      },
+      "id": "adbd9301-8615-489e-b3b9-b7dd986e4c28",
+      "name": "Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        448,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "1fd8fe1e-1b0c-4721-9f34-7069bb247570",
+      "name": "LLM",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        448,
+        1248
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"case_notes_base\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"presenting_concern\": {\n          \"type\": \"string\"\n        },\n        \"dynamic_theme\": {\n          \"type\": \"string\"\n        },\n        \"phase_progress\": {\n          \"type\": \"string\"\n        },\n        \"suggested_pathway\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"presenting_concern\",\n        \"dynamic_theme\",\n        \"phase_progress\"\n      ]\n    },\n    \"session_summary\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"title\": {\n          \"type\": \"string\"\n        },\n        \"opening_reflection\": {\n          \"type\": \"string\"\n        },\n        \"quote_of_the_day\": {\n          \"type\": \"string\"\n        },\n        \"energy_shift\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"start\": {\n              \"type\": \"string\"\n            },\n            \"end\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"start\",\n            \"end\"\n          ]\n        },\n        \"psychological_flexibility\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"self_awareness\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"observation\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"physical_awareness\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"core_values\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"relationships\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            }\n          },\n          \"required\": [\n            \"self_awareness\",\n            \"observation\",\n            \"physical_awareness\",\n            \"core_values\",\n            \"relationships\"\n          ]\n        },\n        \"self_compassion_score\": {\n          \"type\": \"integer\",\n          \"minimum\": 0,\n          \"maximum\": 100\n        }\n      },\n      \"required\": [\n        \"title\",\n        \"opening_reflection\",\n        \"quote_of_the_day\",\n        \"energy_shift\",\n        \"psychological_flexibility\",\n        \"self_compassion_score\"\n      ]\n    },\n    \"extracted_tasks\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"task_type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"journaling\",\n              \"somatic_exercise\",\n              \"cognitive_reframing\",\n              \"behavioral_exposure\",\n              \"situational_prep\",\n              \"general\"\n            ]\n          },\n          \"dynamic_title\": {\n            \"type\": \"string\"\n          },\n          \"dynamic_description\": {\n            \"type\": \"string\"\n          },\n          \"frequency\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"daily\",\n              \"weekly\",\n              \"situational\",\n              \"once\"\n            ]\n          },\n          \"suggested_duration_days\": {\n            \"type\": \"integer\",\n            \"minimum\": 1,\n            \"maximum\": 90\n          }\n        },\n        \"required\": [\n          \"task_type\",\n          \"dynamic_title\",\n          \"dynamic_description\",\n          \"frequency\",\n          \"suggested_duration_days\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"case_notes_base\",\n    \"session_summary\",\n    \"extracted_tasks\"\n  ]\n}"
+      },
+      "id": "6f455a26-8f32-4cbe-a450-0a34fac76803",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nfunction pickSource(payload) {\n  if (!payload || typeof payload !== 'object') return {};\n  if (payload.output && typeof payload.output === 'object') {\n    if (payload.output.output && typeof payload.output.output === 'object') return payload.output.output;\n    return payload.output;\n  }\n  const parsedOutput = parseMaybeJson(payload.output);\n  if (parsedOutput && typeof parsedOutput === 'object') return parsedOutput;\n  if (payload.data && typeof payload.data === 'object') return payload.data;\n  return payload;\n}\n\nconst source = pickSource($json);\nconst cnb = source.case_notes_base && typeof source.case_notes_base === 'object' ? source.case_notes_base : {};\nreturn [{\n  json: {\n    branch: 'summary',\n    model: 'gpt-4o-mini',\n    case_notes_base: cnb,\n    session_summary: source.session_summary || {},\n    extracted_tasks: Array.isArray(source.extracted_tasks) ? source.extracted_tasks : [],\n    suggested_pathway: typeof cnb.suggested_pathway === 'string' ? cnb.suggested_pathway : null\n  }\n}];"
+      },
+      "id": "9d8b0e31-a418-4b53-98e4-94432454cf40",
+      "name": "Wrap Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        1040
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Prompt Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Builder": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "Wrap Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "session_id": "11111111-1111-1111-1111-111111111111",
+          "profile_id": "22222222-2222-2222-2222-222222222222",
+          "profile": {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "name": "Aarav",
+            "age": 29,
+            "gender": "male",
+            "concerns": [
+              "anxiety",
+              "overthinking"
+            ],
+            "therapist_persona": "maya"
+          },
+          "session": {
+            "pathway": "anxiety_and_stress_management",
+            "dynamic_theme": "Performance anxiety",
+            "session_number": 4
+          },
+          "phase_context": {
+            "current_phase_index": 1,
+            "total_phases": 4,
+            "current_phase": {
+              "phase_number": 2,
+              "name": "Cognitive Reframing",
+              "goal": "Identify and restructure anxious thought loops"
+            },
+            "next_phase": {
+              "phase_number": 3,
+              "name": "Behavioral Practice",
+              "goal": "Apply skills in real-world triggers"
+            },
+            "completed_in_current_phase": 2,
+            "target_sessions_in_current_phase": 3
+          },
+          "currentPhase": {
+            "phase_number": 2,
+            "name": "Cognitive Reframing",
+            "goal": "Identify and restructure anxious thought loops"
+          },
+          "messages": [
+            {
+              "role": "user",
+              "content": "I spiraled before my team presentation.",
+              "created_at": "2026-03-27T10:01:00.000Z"
+            },
+            {
+              "role": "assistant",
+              "content": "What thoughts showed up right before the spiral?",
+              "created_at": "2026-03-27T10:01:25.000Z"
+            },
+            {
+              "role": "user",
+              "content": "That everyone would think I am incompetent.",
+              "created_at": "2026-03-27T10:02:02.000Z"
+            }
+          ],
+          "transcript": "Client: I spiraled before my team presentation.\\nTherapist: What thoughts showed up right before the spiral?\\nClient: That everyone would think I am incompetent.",
+          "memories": [],
+          "current_memory": {
+            "memory_text": "Aarav experiences anticipatory anxiety before public speaking and tends to catastrophize peer judgment.",
+            "memory_type": "life_context",
+            "created_at": "2026-03-25T09:00:00.000Z"
+          },
+          "recent_case_notes": [
+            {
+              "dynamic_theme": "Fear of negative evaluation",
+              "phase_progress": "Can identify automatic thoughts but struggles to challenge them independently"
+            }
+          ],
+          "active_tasks": [
+            {
+              "task_type": "journaling",
+              "dynamic_title": "Thought log before meetings",
+              "dynamic_description": "Capture trigger-thought-emotion for each major meeting",
+              "status": "active"
+            }
+          ],
+          "assessments": [
+            {
+              "assessment_type": "gad7",
+              "total_score": 11,
+              "severity": "moderate",
+              "created_at": "2026-03-20T08:00:00.000Z"
+            }
+          ],
+          "mood_entries": [
+            {
+              "score": 5,
+              "notes": "Nervous before standup",
+              "created_at": "2026-03-26T07:45:00.000Z"
+            },
+            {
+              "score": 7,
+              "notes": "Felt better after breathing",
+              "created_at": "2026-03-27T11:00:00.000Z"
+            }
+          ],
+          "memory_workflow_id": "REPLACE_WITH_MEMORY_WORKFLOW_ID",
+          "summary_workflow_id": "REPLACE_WITH_SUMMARY_WORKFLOW_ID",
+          "readiness_workflow_id": "REPLACE_WITH_READINESS_WORKFLOW_ID"
+        }
+      }
+    ]
+  },
+  "versionId": "b8eb68d6-fa6b-46a9-98dc-095090b42e11",
+  "activeVersionId": "b8eb68d6-fa6b-46a9-98dc-095090b42e11",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-27T14:28:09.047Z",
+      "createdAt": "2026-03-27T14:28:09.047Z",
+      "role": "workflow:owner",
+      "workflowId": "WNCcZQDy6fcVL5RS",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-28T09:05:36.498Z",
+    "createdAt": "2026-03-28T09:05:34.978Z",
+    "versionId": "b8eb68d6-fa6b-46a9-98dc-095090b42e11",
+    "workflowId": "WNCcZQDy6fcVL5RS",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "dc5b8ea9-58a1-4e7d-b875-406ceb8f4565",
+        "name": "When Executed by Another Workflow",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          48,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nconst root = $json || {};\nconst body = typeof root.body === 'string' ? (parseMaybeJson(root.body) || {}) : (root.body || {});\nconst d = (body && typeof body === 'object' && Object.keys(body).length > 0) ? body : root;\n\nconst systemPrompt = [\n  'You are a clinical supervisor generating post-session summary and tasks.',\n  'Use transcript + profile + phase context + assessments + tasks + mood context.',\n  'If pathway is not yet selected, include case_notes_base.suggested_pathway when confident.',\n  'No date hallucinations. Return ONLY valid JSON.'\n].join('\\n');\n\nconst userPrompt = [\n  'SESSION CONTEXT:', JSON.stringify({ profile: d.profile || {}, session: d.session || {}, phase_context: d.phase_context || {}, active_tasks: d.active_tasks || [], assessments: d.assessments || [], mood_entries: d.mood_entries || [] }),\n  '', 'MESSAGES:', JSON.stringify(d.messages || []),\n  '', 'TRANSCRIPT:', d.transcript || '',\n  '', 'Return JSON schema:',\n  '{',\n  '  \"case_notes_base\": { \"presenting_concern\": \"string\", \"dynamic_theme\": \"string\", \"phase_progress\": \"string\", \"suggested_pathway\": \"string | null\" },',\n  '  \"session_summary\": { \"title\": \"string\", \"opening_reflection\": \"string\", \"quote_of_the_day\": \"string\", \"energy_shift\": { \"start\": \"string\", \"end\": \"string\" }, \"psychological_flexibility\": { \"self_awareness\": 0, \"observation\": 0, \"physical_awareness\": 0, \"core_values\": 0, \"relationships\": 0 }, \"self_compassion_score\": 0 },',\n  '  \"extracted_tasks\": [{ \"task_type\": \"journaling | somatic_exercise | cognitive_reframing | behavioral_exposure | situational_prep | general\", \"dynamic_title\": \"string\", \"dynamic_description\": \"string\", \"frequency\": \"daily | weekly | situational | once\", \"suggested_duration_days\": 7 }]',\n  '}'\n].join('\\n');\n\nreturn [{ json: { systemPrompt, userPrompt } }];"
+        },
+        "id": "e7b233bd-a359-4c1a-a678-2f8b315d9fb8",
+        "name": "Prompt Builder",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          1040
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.userPrompt }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "={{ $json.systemPrompt }}"
+          }
+        },
+        "id": "adbd9301-8615-489e-b3b9-b7dd986e4c28",
+        "name": "Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.6,
+        "position": [
+          448,
+          1040
+        ]
+      },
+      {
+        "parameters": {
+          "model": "gpt-4o-mini",
+          "options": {
+            "temperature": 0.2
+          }
+        },
+        "id": "1fd8fe1e-1b0c-4721-9f34-7069bb247570",
+        "name": "LLM",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1,
+        "position": [
+          448,
+          1248
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "schemaType": "manual",
+          "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"case_notes_base\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"presenting_concern\": {\n          \"type\": \"string\"\n        },\n        \"dynamic_theme\": {\n          \"type\": \"string\"\n        },\n        \"phase_progress\": {\n          \"type\": \"string\"\n        },\n        \"suggested_pathway\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"presenting_concern\",\n        \"dynamic_theme\",\n        \"phase_progress\"\n      ]\n    },\n    \"session_summary\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"title\": {\n          \"type\": \"string\"\n        },\n        \"opening_reflection\": {\n          \"type\": \"string\"\n        },\n        \"quote_of_the_day\": {\n          \"type\": \"string\"\n        },\n        \"energy_shift\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"start\": {\n              \"type\": \"string\"\n            },\n            \"end\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"start\",\n            \"end\"\n          ]\n        },\n        \"psychological_flexibility\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"self_awareness\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"observation\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"physical_awareness\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"core_values\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            },\n            \"relationships\": {\n              \"type\": \"integer\",\n              \"minimum\": 0,\n              \"maximum\": 100\n            }\n          },\n          \"required\": [\n            \"self_awareness\",\n            \"observation\",\n            \"physical_awareness\",\n            \"core_values\",\n            \"relationships\"\n          ]\n        },\n        \"self_compassion_score\": {\n          \"type\": \"integer\",\n          \"minimum\": 0,\n          \"maximum\": 100\n        }\n      },\n      \"required\": [\n        \"title\",\n        \"opening_reflection\",\n        \"quote_of_the_day\",\n        \"energy_shift\",\n        \"psychological_flexibility\",\n        \"self_compassion_score\"\n      ]\n    },\n    \"extracted_tasks\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"task_type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"journaling\",\n              \"somatic_exercise\",\n              \"cognitive_reframing\",\n              \"behavioral_exposure\",\n              \"situational_prep\",\n              \"general\"\n            ]\n          },\n          \"dynamic_title\": {\n            \"type\": \"string\"\n          },\n          \"dynamic_description\": {\n            \"type\": \"string\"\n          },\n          \"frequency\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"daily\",\n              \"weekly\",\n              \"situational\",\n              \"once\"\n            ]\n          },\n          \"suggested_duration_days\": {\n            \"type\": \"integer\",\n            \"minimum\": 1,\n            \"maximum\": 90\n          }\n        },\n        \"required\": [\n          \"task_type\",\n          \"dynamic_title\",\n          \"dynamic_description\",\n          \"frequency\",\n          \"suggested_duration_days\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"case_notes_base\",\n    \"session_summary\",\n    \"extracted_tasks\"\n  ]\n}"
+        },
+        "id": "6f455a26-8f32-4cbe-a450-0a34fac76803",
+        "name": "Structured Output Parser",
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.2,
+        "position": [
+          608,
+          1232
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "function parseMaybeJson(value) {\n  if (typeof value !== 'string') return null;\n  try { return JSON.parse(value); } catch { return null; }\n}\n\nfunction pickSource(payload) {\n  if (!payload || typeof payload !== 'object') return {};\n  if (payload.output && typeof payload.output === 'object') {\n    if (payload.output.output && typeof payload.output.output === 'object') return payload.output.output;\n    return payload.output;\n  }\n  const parsedOutput = parseMaybeJson(payload.output);\n  if (parsedOutput && typeof parsedOutput === 'object') return parsedOutput;\n  if (payload.data && typeof payload.data === 'object') return payload.data;\n  return payload;\n}\n\nconst source = pickSource($json);\nconst cnb = source.case_notes_base && typeof source.case_notes_base === 'object' ? source.case_notes_base : {};\nreturn [{\n  json: {\n    branch: 'summary',\n    model: 'gpt-4o-mini',\n    case_notes_base: cnb,\n    session_summary: source.session_summary || {},\n    extracted_tasks: Array.isArray(source.extracted_tasks) ? source.extracted_tasks : [],\n    suggested_pathway: typeof cnb.suggested_pathway === 'string' ? cnb.suggested_pathway : null\n  }\n}];"
+        },
+        "id": "9d8b0e31-a418-4b53-98e4-94432454cf40",
+        "name": "Wrap Response1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          816,
+          1040
+        ]
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Prompt Builder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prompt Builder": {
+        "main": [
+          [
+            {
+              "node": "Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LLM": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent": {
+        "main": [
+          [
+            {
+              "node": "Wrap Response1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Saksham Agrawal",
+    "name": "Version b8eb68d6",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}
