@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-28T09:07:36.606Z",
+  "updatedAt": "2026-03-28T15:28:53.736Z",
   "createdAt": "2026-03-27T14:28:50.609Z",
   "id": "xE1TPYaF0MAZHO2W",
   "name": "Mind Coach - Session End Readiness Agent v2 (Execute Trigger)",
@@ -156,8 +156,7 @@
     }
   },
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
+    "executionOrder": "v1"
   },
   "staticData": null,
   "meta": {
