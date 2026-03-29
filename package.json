@@ -1,0 +1,25 @@
+{
+  "name": "n8n-workflows",
+  "version": "1.0.0",
+  "description": "Custom n8n workflows and utility tools",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "apply": "./scripts/apply.sh",
+    "import-all": "./scripts/import-all.sh",
+    "set-auth": "./scripts/set-auth.sh",
+    "cli": "cd tools/n8n-cli && bun run src/index.ts",
+    "cli:test": "cd tools/n8n-cli && bun test",
+    "cli:lint": "cd tools/n8n-cli && bun run lint"
+  },
+  "keywords": [
+    "n8n",
+    "workflows",
+    "automation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "n8n-workflow": "^1"
+  }
+}
