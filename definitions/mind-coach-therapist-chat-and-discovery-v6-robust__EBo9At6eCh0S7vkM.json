@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-30T04:09:43.793Z",
+  "updatedAt": "2026-03-30T04:17:34.203Z",
   "createdAt": "2026-03-23T16:07:43.755Z",
   "id": "EBo9At6eCh0S7vkM",
   "name": "Mind Coach - Therapist Chat & Discovery (v6 Robust)",
@@ -883,7 +883,7 @@
       {
         "parameters": {
           "respondWith": "json",
-          "responseBody": "={{ { crisis_detected: true, crisis_type: $json.output.crisis_type, reply: $json.output.reply || 'I hear how much pain you are in right now. Your safety matters deeply to me. Please reach out to a crisis line — iCall: 9152987821 or iCall chat at icallhelpline.org. I am here with you.' } }}",
+          "responseBody": "={{ { reply: $json.output.reply || 'I hear how much pain you are in right now. Your safety matters deeply to me. Please reach out to a crisis line — iCall: 9152987821 or iCall chat at icallhelpline.org. I am here with you.', session_state: ($node[\"Webhook\"].json.body?.session_state || $node[\"Webhook\"].json.session_state || 'active'), pathway: ($node[\"Webhook\"].json.body?.pathway || $node[\"Webhook\"].json.pathway || 'engagement_rapport_and_assessment'), dynamic_theme: ($node[\"Webhook\"].json.body?.dynamic_theme || $node[\"Webhook\"].json.dynamic_theme || null), is_session_close: false, dynamic_in_chat_exercise: null, guardrail_status: 'passed', crisis_detected: true, crisis_type: $json.output.crisis_type || 'acute_distress', quality_meta: { conversation_mode: 'distress_support', response_strategy: 'crisis_branch_immediate_support', distress_level: 'elevated', crisis_branch: true } } }}",
           "options": {}
         },
         "id": "9ebd8404-e43e-49ec-84d5-8c5113227a8d",
