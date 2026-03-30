@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-30T04:51:37.361Z",
+  "updatedAt": "2026-03-30T11:42:56.218Z",
   "createdAt": "2026-03-27T14:29:18.776Z",
   "id": "FHwf1PMIrkN6T9j5",
   "name": "Mind Coach - Session End Memory Agent v2 (Execute Trigger)",
@@ -61,7 +61,7 @@
       "parameters": {
         "schemaType": "manual",
         "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"extracted_memories\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"maxItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"memory_text\": {\n            \"type\": \"string\"\n          },\n          \"memory_type\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"life_context\"\n            ]\n          }\n        },\n        \"required\": [\n          \"memory_text\",\n          \"memory_type\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"extracted_memories\"\n  ]\n}",
-        "autoFix": true
+        "autoFix": false
       },
       "id": "2f4e3ee4-27c5-410a-a003-aa4ee834d390",
       "name": "Structured Output Parser1",
