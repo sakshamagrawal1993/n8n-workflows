@@ -1,0 +1,47 @@
+{
+  "updatedAt": "2026-04-11T10:10:04.025Z",
+  "createdAt": "2026-04-11T10:09:55.999Z",
+  "id": "uyz4iQ7mbDb1b9Z6",
+  "name": "Image Analysis",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "9f1ed5ab-c5d9-4aee-9c0b-fc11a9014171",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e1e0b074-7d81-470f-81f2-7a6d0ef2b31b",
+      "name": "Webhook",
+      "webhookId": "9f1ed5ab-c5d9-4aee-9c0b-fc11a9014171"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "f7be2491-8bcb-4655-b1d3-a19f301e589d",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-11T10:09:55.999Z",
+      "createdAt": "2026-04-11T10:09:55.999Z",
+      "role": "workflow:owner",
+      "workflowId": "uyz4iQ7mbDb1b9Z6",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

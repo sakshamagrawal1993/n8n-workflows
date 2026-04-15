@@ -1,0 +1,264 @@
+{
+  "updatedAt": "2026-04-12T11:14:54.557Z",
+  "createdAt": "2026-04-12T11:11:13.473Z",
+  "id": "8t9AlBVPeYAOKWwS",
+  "name": "Image Analysis",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -304,
+        -32
+      ],
+      "id": "9ba451a7-89c4-4625-a5a3-9d357161e73e",
+      "name": "When chat message received",
+      "webhookId": "91763f60-196a-46ff-bef2-87752a0c9146"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "## Role\nYou are a **Dermatology Morphology Extraction Specialist**.  \nYour task is to describe **only visible dermatologic findings** from the provided image(s).  \n**No diagnosis is allowed.**\n\n---\n\n## Objective\nExtract all visible dermatologic features using a **mandatory structured morphology grid**.\n\n---\n\n## Tasks\n\n1. Identify and extract the following:\n\n- primary lesion type  \n- secondary changes  \n- scale presence (absent / mild / moderate / thick / not clearly inferable)  \n- scale quality (fine / silvery / greasy / gritty / not clearly inferable)  \n- crust type  \n- surface texture  \n- borders  \n- color  \n- induration presence (yes / no / not clearly inferable)  \n- distribution pattern  \n- follicular involvement (yes / no / not clearly inferable)  \n\n---\n\n## Mandatory Clarification\n\n- Explicitly confirm whether:\n  - scale is absent, OR  \n  - scale is not clearly visible  \n\n---\n\n## Rules\n\n- Only describe **visible features**  \n- Do **NOT** infer diagnosis  \n- Do **NOT** include probability statements  \n- Do **NOT** include reasoning or explanations  \n- If a feature cannot be assessed → mark as **\"not clearly inferable\"**  \n- If the provided image is **not dermatological**, clearly state: **\"not a dermatological image\"**  \n\n---------------\n\nInput: \nImage provided: {image_url}\n\noutput:\n- Output must be **strict JSON only**",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "ba76022e-9ff3-40a2-9782-4fbc220e6819",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-2025-04-14"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2,
+          "timeout": 60000,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        160
+      ],
+      "id": "d2f77ebd-f533-42f6-9f96-eaab5e8a426d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"title\": \"Dermatology Morphology Extraction Schema\",\n  \"description\": \"Structured extraction of only visible dermatologic features from an image, without any diagnostic inference.\",\n  \"properties\": {\n    \"morphology_grid\": {\n      \"type\": \"object\",\n      \"description\": \"Standardized representation of observable lesion morphology based strictly on visual assessment.\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"primary_lesion_type\": {\n          \"type\": \"string\",\n          \"description\": \"Primary visible lesion morphology such as macule, papule, plaque, vesicle, pustule, nodule, or patch.\"\n        },\n        \"secondary_changes\": {\n          \"type\": \"array\",\n          \"description\": \"Visible secondary alterations such as erosion, ulceration, fissuring, excoriation, or lichenification.\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"scale_presence\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"absent\",\n            \"mild\",\n            \"moderate\",\n            \"thick\"\n          ],\n          \"description\": \"Degree of visible scaling on the lesion surface. If uncertain, use visibility_limitations instead of assuming absence.\"\n        },\n        \"scale_quality\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"fine\",\n            \"silvery\",\n            \"greasy\",\n            \"gritty\",\n            \"not clearly inferable\"\n          ],\n          \"description\": \"Qualitative appearance of scale if present; use 'not clearly inferable' if scale characteristics cannot be determined.\"\n        },\n        \"crust_type\": {\n          \"type\": \"string\",\n          \"description\": \"Type of visible crust, if present, such as serous, hemorrhagic, or honey-colored.\"\n        },\n        \"surface_texture\": {\n          \"type\": \"string\",\n          \"description\": \"Observed surface texture such as smooth, rough, verrucous, or scaly.\"\n        },\n        \"borders\": {\n          \"type\": \"string\",\n          \"description\": \"Visible characteristics of lesion margins such as well-defined, ill-defined, regular, or irregular.\"\n        },\n        \"color\": {\n          \"type\": \"string\",\n          \"description\": \"Observed color(s) of the lesion such as erythematous, hyperpigmented, hypopigmented, violaceous, or mixed.\"\n        },\n        \"induration_presence\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"yes\",\n            \"no\",\n            \"not clearly inferable\"\n          ],\n          \"description\": \"Whether visible features suggest induration; use 'not clearly inferable' if this cannot be assessed visually.\"\n        },\n        \"distribution_pattern\": {\n          \"type\": \"string\",\n          \"description\": \"Pattern of lesion distribution such as localized, generalized, linear, dermatomal, or symmetrical.\"\n        },\n        \"follicular_involvement\": {\n          \"type\": \"string\",\n          \"description\": \"Indicates whether the lesion appears centered around or involving hair follicles based on visible features.\"\n        }\n      },\n      \"required\": [\n        \"primary_lesion_type\",\n        \"secondary_changes\",\n        \"scale_presence\",\n        \"scale_quality\",\n        \"crust_type\",\n        \"surface_texture\",\n        \"borders\",\n        \"color\",\n        \"induration_presence\",\n        \"distribution_pattern\",\n        \"follicular_involvement\"\n      ]\n    },\n    \"visibility_limitations\": {\n      \"type\": \"string\",\n      \"description\": \"Explicit description of any limitations in visual assessment such as poor lighting, blur, obstruction, or inability to confirm presence or absence of specific features (e.g., scaling).\"\n    }\n  },\n  \"required\": [\n    \"morphology_grid\",\n    \"visibility_limitations\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        176
+      ],
+      "id": "3401265e-66b7-4850-a7b9-75bd207e05f0",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b0ce94ff-f367-4a02-874a-210b65bd25a1",
+  "activeVersionId": "b0ce94ff-f367-4a02-874a-210b65bd25a1",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-12T11:11:13.473Z",
+      "createdAt": "2026-04-12T11:11:13.473Z",
+      "role": "workflow:owner",
+      "workflowId": "8t9AlBVPeYAOKWwS",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-12T11:14:55.807Z",
+    "createdAt": "2026-04-12T11:14:49.031Z",
+    "versionId": "b0ce94ff-f367-4a02-874a-210b65bd25a1",
+    "workflowId": "8t9AlBVPeYAOKWwS",
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          -304,
+          -32
+        ],
+        "id": "9ba451a7-89c4-4625-a5a3-9d357161e73e",
+        "name": "When chat message received",
+        "webhookId": "91763f60-196a-46ff-bef2-87752a0c9146"
+      },
+      {
+        "parameters": {
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "## Role\nYou are a **Dermatology Morphology Extraction Specialist**.  \nYour task is to describe **only visible dermatologic findings** from the provided image(s).  \n**No diagnosis is allowed.**\n\n---\n\n## Objective\nExtract all visible dermatologic features using a **mandatory structured morphology grid**.\n\n---\n\n## Tasks\n\n1. Identify and extract the following:\n\n- primary lesion type  \n- secondary changes  \n- scale presence (absent / mild / moderate / thick / not clearly inferable)  \n- scale quality (fine / silvery / greasy / gritty / not clearly inferable)  \n- crust type  \n- surface texture  \n- borders  \n- color  \n- induration presence (yes / no / not clearly inferable)  \n- distribution pattern  \n- follicular involvement (yes / no / not clearly inferable)  \n\n---\n\n## Mandatory Clarification\n\n- Explicitly confirm whether:\n  - scale is absent, OR  \n  - scale is not clearly visible  \n\n---\n\n## Rules\n\n- Only describe **visible features**  \n- Do **NOT** infer diagnosis  \n- Do **NOT** include probability statements  \n- Do **NOT** include reasoning or explanations  \n- If a feature cannot be assessed → mark as **\"not clearly inferable\"**  \n- If the provided image is **not dermatological**, clearly state: **\"not a dermatological image\"**  \n\n---------------\n\nInput: \nImage provided: {image_url}\n\noutput:\n- Output must be **strict JSON only**",
+            "passthroughBinaryImages": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          256,
+          -32
+        ],
+        "id": "ba76022e-9ff3-40a2-9782-4fbc220e6819",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-2025-04-14",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-2025-04-14"
+          },
+          "builtInTools": {},
+          "options": {
+            "temperature": 0.2,
+            "timeout": 60000,
+            "maxRetries": 2
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          192,
+          160
+        ],
+        "id": "d2f77ebd-f533-42f6-9f96-eaab5e8a426d",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "schemaType": "manual",
+          "inputSchema": "{\n  \"type\": \"object\",\n  \"title\": \"Dermatology Morphology Extraction Schema\",\n  \"description\": \"Structured extraction of only visible dermatologic features from an image, without any diagnostic inference.\",\n  \"properties\": {\n    \"morphology_grid\": {\n      \"type\": \"object\",\n      \"description\": \"Standardized representation of observable lesion morphology based strictly on visual assessment.\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"primary_lesion_type\": {\n          \"type\": \"string\",\n          \"description\": \"Primary visible lesion morphology such as macule, papule, plaque, vesicle, pustule, nodule, or patch.\"\n        },\n        \"secondary_changes\": {\n          \"type\": \"array\",\n          \"description\": \"Visible secondary alterations such as erosion, ulceration, fissuring, excoriation, or lichenification.\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"scale_presence\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"absent\",\n            \"mild\",\n            \"moderate\",\n            \"thick\"\n          ],\n          \"description\": \"Degree of visible scaling on the lesion surface. If uncertain, use visibility_limitations instead of assuming absence.\"\n        },\n        \"scale_quality\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"fine\",\n            \"silvery\",\n            \"greasy\",\n            \"gritty\",\n            \"not clearly inferable\"\n          ],\n          \"description\": \"Qualitative appearance of scale if present; use 'not clearly inferable' if scale characteristics cannot be determined.\"\n        },\n        \"crust_type\": {\n          \"type\": \"string\",\n          \"description\": \"Type of visible crust, if present, such as serous, hemorrhagic, or honey-colored.\"\n        },\n        \"surface_texture\": {\n          \"type\": \"string\",\n          \"description\": \"Observed surface texture such as smooth, rough, verrucous, or scaly.\"\n        },\n        \"borders\": {\n          \"type\": \"string\",\n          \"description\": \"Visible characteristics of lesion margins such as well-defined, ill-defined, regular, or irregular.\"\n        },\n        \"color\": {\n          \"type\": \"string\",\n          \"description\": \"Observed color(s) of the lesion such as erythematous, hyperpigmented, hypopigmented, violaceous, or mixed.\"\n        },\n        \"induration_presence\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"yes\",\n            \"no\",\n            \"not clearly inferable\"\n          ],\n          \"description\": \"Whether visible features suggest induration; use 'not clearly inferable' if this cannot be assessed visually.\"\n        },\n        \"distribution_pattern\": {\n          \"type\": \"string\",\n          \"description\": \"Pattern of lesion distribution such as localized, generalized, linear, dermatomal, or symmetrical.\"\n        },\n        \"follicular_involvement\": {\n          \"type\": \"string\",\n          \"description\": \"Indicates whether the lesion appears centered around or involving hair follicles based on visible features.\"\n        }\n      },\n      \"required\": [\n        \"primary_lesion_type\",\n        \"secondary_changes\",\n        \"scale_presence\",\n        \"scale_quality\",\n        \"crust_type\",\n        \"surface_texture\",\n        \"borders\",\n        \"color\",\n        \"induration_presence\",\n        \"distribution_pattern\",\n        \"follicular_involvement\"\n      ]\n    },\n    \"visibility_limitations\": {\n      \"type\": \"string\",\n      \"description\": \"Explicit description of any limitations in visual assessment such as poor lighting, blur, obstruction, or inability to confirm presence or absence of specific features (e.g., scaling).\"\n    }\n  },\n  \"required\": [\n    \"morphology_grid\",\n    \"visibility_limitations\"\n  ]\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          416,
+          176
+        ],
+        "id": "3401265e-66b7-4850-a7b9-75bd207e05f0",
+        "name": "Structured Output Parser"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Saksham Agrawal",
+    "name": "Version b0ce94ff",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}

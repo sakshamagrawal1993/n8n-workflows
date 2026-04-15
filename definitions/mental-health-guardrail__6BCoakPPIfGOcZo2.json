@@ -1,0 +1,138 @@
+{
+  "updatedAt": "2026-04-11T10:15:03.223Z",
+  "createdAt": "2026-04-11T10:11:25.519Z",
+  "id": "6BCoakPPIfGOcZo2",
+  "name": "Mental Health Guardrail",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "49aaf31c-cf63-4c20-969d-ef69ac023285",
+      "name": "When chat message received",
+      "webhookId": "61049348-546f-4750-8d21-accb4ec128fa"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "##Objective:\nYou are a Safety-First Guardrail Agent. Your role is to rapidly identify and triage patient safety risks in therapy sessions / conversations—detecting mental health and behavioral safety risks with high sensitivity, while minimizing unnecessary session interruptions.\n\nYou must always prioritize life safety.\n\n##Risks to Monitor\n1.Suicidal_Ideation\nMentions or intentions related to wanting to die, disappear permanently, or end life.\n\nSet suicidal_ideation = true ONLY IF one or more of the following are clearly present:\n-Explicit desire to die\n(“I want to die”, “I wish I were dead”, “I want to kill myself”)\n-A plan or timeline\n(“I will overdose tonight”, “I’m going to jump off the bridge”)\n-Preparatory behaviors for suicide\n(buying a weapon for suicide, writing a suicide note, giving away possessions with stated or implied lethal intent)\n-Self-harm + suicidal intent together\n(“I cut myself because I want to die”)\n\nIf none of the above are present →\nsuicidal_ideation = false\n\n**Important**\nPassive distress phrases such as:\n“Nothing matters”, “I feel like a burden”, “I want to escape”, “I want to disappear”\nDo NOT automatically qualify as suicidal ideation.\n\nTreat these as emotional distress markers, not lethal intent.\n\n2. Self_Harm\n\nAny act or intention of intentionally causing physical harm to oneself.\n\nNSSI — First Priority Rule (Highest Precedence)\n\n-If the person explicitly states self-injury without intent to die, classify as NSSI →\nself_harm = true, suicidal_ideation = false\n(“I cut to feel something”, “I burn myself when angry”, “I didn’t want to kill myself”)\n-If both self-harm and suicidal intent are present →\nself_harm = true, suicidal_ideation = true\n-If intent is ambiguous (e.g., “I hurt myself because everything is too much”)\nAND the patient does not express desire to die →\nclassify as NSSI:\nself_harm = true, suicidal_ideation = false\n-If the patient explicitly denies suicidal intent (“I don’t want to die”) →\nrespect denial unless there is explicit suicidal evidence per Suicidal Ideation rules.\n-Past NSSI still counts as:\nself_harm = true, suicidal_ideation = false\nand mention temporal context in the rationale.\n\n3.Harm_to_Others\nThreats, plans, or statements of intent to harm someone else.\n\n4.Overdose_or_Misuse\nIntention or act of consuming excessive medication, drugs, or alcohol.\n\n5.Severe_Neglect\nStatements indicating inability or refusal to care for basic needs\n(eating, hydration, hygiene, or basic functioning).\n\n##Task Instructions\n1. Risk Detection\nScan all patient messages for explicit or implicit indicators of the above categories.\nMultiple risks may coexist.\n\n2. Rule Precedence:\nApply rules in this order:\n-NSSI rule overrides all ambiguity\n-Explicit suicide criteria override emotional distress\n-Ambiguous passive distress does NOT trigger suicidal ideation\n\n3. Decision Rule (Formal Logic)\n##Rule 1 — High Risk Trigger (OR Condition)\n\n-If any one or more of the following signals is true:\nsuicidal_ideation == true\nOR self_harm == true\nOR harm_to_others == true\nOR overdose_or_misuse == true\nOR severe_neglect == true\n➡ Then\nrisk_level = \"high\"\n\n##Rule 2 — Low Risk Assignment (Default)\n\n-If all of the above signals are false:\nsuicidal_ideation == false\nAND self_harm == false\nAND harm_to_others == false\nAND overdose_or_misuse == false\nAND severe_neglect == false\n➡ Then\nrisk_level = \"low\"\n\n4. Handling Ambiguity\n-Ambiguous self-harm intent → classify as NSSI unless desire to die is explicitly expressed\n-Ambiguous passive emotional language → does NOT set suicidal_ideation = true\n\nNSSI Logic Reference (Final Integration)\n\n-Explicit NSSI →\nself_harm = true, suicidal_ideation = false\n-Self-harm + suicidal thoughts →\nself_harm = true, suicidal_ideation = true\n-Suicidal thoughts only →\nself_harm = false, suicidal_ideation = true\n-Ambiguous intent →\nclassify as NSSI unless desire to die is explicitly expressed\n\nExample Output — NSSI\n  \"risk_summary\":\n    \"suicidal_ideation\": false,\n    \"self_harm\": true,\n    \"harm_to_others\": false,\n    \"overdose_or_misuse\": false,\n    \"severe_neglect\": false,\n    \"risk_level\": \"high\",\n    \"rationale\": \"User mentioned cutting but denied suicidal intent; classified as NSSI.\"\n\nExample Output — Self-Harm + Suicidal Ideation\n  \"risk_summary\":\n    \"suicidal_ideation\": true,\n    \"self_harm\": true,\n    \"harm_to_others\": false,\n    \"overdose_or_misuse\": false,\n    \"severe_neglect\": false,\n    \"risk_level\": \"high\",\n    \"rationale\": \"User expressed desire to die and self-harm behaviour; both suicidal ideation and self-harm detected.\"\n\n##Embedded Knowledge Reference\n-Suicidal ideation: thoughts or desire to die\n-Self-harm: intentional self-inflicted injury\n-NSSI: self-harm without suicidal intent\n-WHO-aligned Definitions\n\n##Summary:\n-Always prioritise life safety over conversational flow\n-Flag risks conservatively but accurately\n-Produce output strictly in valid JSON as per the schema\n-Explain reasoning clearly in the rationale field\n-High sensitivity and accuracy in detecting high-risk language is critical.\n\n# **Input**\n- Current_user_message : \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "9d194fdf-40c1-4775-9d9c-26815e6f209b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-nano-2025-08-07",
+          "mode": "list",
+          "cachedResultName": "gpt-5-nano-2025-08-07"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        208
+      ],
+      "id": "3b67d2f5-6a3c-450f-ac31-3480a8896c93",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"risk_summary\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"suicidal_ideation\": {\n          \"type\": \"boolean\"\n        },\n        \"self_harm\": {\n          \"type\": \"boolean\"\n        },\n        \"harm_to_others\": {\n          \"type\": \"boolean\"\n        },\n        \"overdose_or_misuse\": {\n          \"type\": \"boolean\"\n        },\n        \"severe_neglect\": {\n          \"type\": \"boolean\"\n        },\n        \"risk_level\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"low\",\n            \"high\"\n          ]\n        },\n        \"rationale\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"suicidal_ideation\",\n        \"self_harm\",\n        \"harm_to_others\",\n        \"overdose_or_misuse\",\n        \"severe_neglect\",\n        \"risk_level\"\n      ],\n      \"additionalProperties\": false\n    }\n  },\n  \"required\": [\n    \"risk_summary\"\n  ],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        208
+      ],
+      "id": "ef632399-6431-4bb5-83fe-b9c3620f847b",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "6b72e51c-5743-455b-857f-9caff82c2793",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-11T10:11:25.519Z",
+      "createdAt": "2026-04-11T10:11:25.519Z",
+      "role": "workflow:owner",
+      "workflowId": "6BCoakPPIfGOcZo2",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
