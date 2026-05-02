@@ -13,8 +13,14 @@ set -a
 source "$ROOT_DIR/.env"
 set +a
 
+FORCE=()
+if [[ "$MODE" == "apply-force" ]]; then
+  MODE="apply"
+  FORCE=(--force)
+fi
+
 if [[ "$MODE" == "apply" ]]; then
-  "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply -d "$ROOT_DIR/definitions"
+  "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply "${FORCE[@]}" -d "$ROOT_DIR/definitions"
   echo "Apply completed."
 else
   "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply --dry-run -d "$ROOT_DIR/definitions"

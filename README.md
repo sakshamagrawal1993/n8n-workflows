@@ -41,6 +41,21 @@ Apply:
 ./scripts/apply.sh apply
 ```
 
+If n8n reports conflicts (e.g. remote newer than file), force overwrite from repo:
+
+```bash
+./scripts/apply.sh apply-force
+```
+
+### Trading Agents duplicates (remote only)
+
+Repeated imports can create many workflows with the same name. Remove extras (keeps the 10 canonical IDs used by the Supervisor) then re-apply:
+
+```bash
+./scripts/dedupe_trading_agents_remote.sh
+./scripts/apply.sh apply-force
+```
+
 ## Notes
 
 - Keep `.env` private. It must not be committed.
