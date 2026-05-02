@@ -15,10 +15,10 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
+        "text": "=Ticker: {{$json.ticker}}\nDate: {{$json.date}}\n\nMarket report:\n{{$json.market_report}}\n\nNews report:\n{{$json.news_report}}\n\nFundamentals report:\n{{$json.fundamentals_report}}\n\nSocial report:\n{{$json.social_report}}\n\nBull case:\n{{$json.bull_report}}\n\nBear case:\n{{$json.bear_report}}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a Research Manager. Synthesize all reports and present them to the Portfolio Manager, keeping a strict 24-hour trading horizon in mind."
+          "systemMessage": "You are a Research Manager. Synthesize all analyst, social, bull, and bear reports into one balanced briefing for the Portfolio Manager, keeping a strict 24-hour trading horizon in mind."
         }
       },
       "id": "agent-node",
@@ -55,19 +55,10 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://localhost:8001/research?ticker={{$json.ticker}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
+        "sendHeaders": false,
         "options": {},
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "none"
+        "authentication": "none"
       },
       "id": "tool-node",
       "name": "Yahoo Deep Research Tool",
@@ -76,13 +67,7 @@
       "position": [
         700,
         500
-      ],
-      "credentials": {
-        "none": {
-          "id": "",
-          "name": ""
-        }
-      }
+      ]
     }
   ],
   "connections": {
@@ -120,9 +105,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "DXp8YLaipORggHwr",
-  "updatedAt": "2026-05-02T08:13:43.218Z",
+  "updatedAt": "2026-05-02T09:39:07.491Z",
   "createdAt": "2026-05-02T06:46:02.854Z"
 }

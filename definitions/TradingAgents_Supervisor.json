@@ -20,12 +20,13 @@
     },
     {
       "parameters": {
-        "workflowId": "market-analyst-id",
+        "workflowId": "YeGEiKF7ZndLF8YN",
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker}}",
-            "date": "={{$json.body.date}}"
+            "ticker": "={{$json.body.ticker || $json.ticker}}",
+            "date": "={{$json.body.date || $json.date}}",
+            "session_id": "={{$json.body.session_id || $json.session_id}}"
           }
         }
       },
@@ -35,17 +36,18 @@
       "typeVersion": 1,
       "position": [
         500,
-        100
+        0
       ]
     },
     {
       "parameters": {
-        "workflowId": "news-analyst-id",
+        "workflowId": "TIJbwjW9wXs7Nz0f",
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker}}",
-            "date": "={{$json.body.date}}"
+            "ticker": "={{$json.body.ticker || $json.ticker}}",
+            "date": "={{$json.body.date || $json.date}}",
+            "session_id": "={{$json.body.session_id || $json.session_id}}"
           }
         }
       },
@@ -55,17 +57,18 @@
       "typeVersion": 1,
       "position": [
         500,
-        300
+        180
       ]
     },
     {
       "parameters": {
-        "workflowId": "fundamentals-analyst-id",
+        "workflowId": "qXgHkMpiqmOJqDqv",
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker}}",
-            "date": "={{$json.body.date}}"
+            "ticker": "={{$json.body.ticker || $json.ticker}}",
+            "date": "={{$json.body.date || $json.date}}",
+            "session_id": "={{$json.body.session_id || $json.session_id}}"
           }
         }
       },
@@ -75,7 +78,28 @@
       "typeVersion": 1,
       "position": [
         500,
-        500
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "bREGC66gC2ppRSio",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.body.ticker || $json.ticker}}",
+            "date": "={{$json.body.date || $json.date}}",
+            "session_id": "={{$json.body.session_id || $json.session_id}}"
+          }
+        }
+      },
+      "id": "execute-social-analyst",
+      "name": "Call Social Analyst Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        500,
+        540
       ]
     },
     {
@@ -84,24 +108,151 @@
         "combinationMode": "mergeByPosition",
         "options": {}
       },
-      "id": "merge-analysts",
-      "name": "Merge Analyst Reports",
+      "id": "merge-market-news",
+      "name": "Merge Market And News",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        800,
-        300
+        760,
+        90
       ]
     },
     {
       "parameters": {
-        "workflowId": "research-manager-id",
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-fundamentals-social",
+      "name": "Merge Fundamentals And Social",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-analyst-groups",
+      "name": "Merge Analyst Groups",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        980,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = $('Webhook (Trigger)').first().json.body || $('Webhook (Trigger)').first().json;\nconst read = (nodeName) => {\n  try {\n    const data = $node[nodeName].json;\n    return data.output || data.text || data.content || JSON.stringify(data);\n  } catch (error) {\n    return `No output from ${nodeName}`;\n  }\n};\nreturn [{ json: {\n  ticker: root.ticker,\n  date: root.date,\n  session_id: root.session_id,\n  market_report: read('Call Market Analyst Sub-workflow'),\n  news_report: read('Call News Analyst Sub-workflow'),\n  fundamentals_report: read('Call Fundamentals Analyst Sub-workflow'),\n  social_report: read('Call Social Analyst Sub-workflow')\n}}];"
+      },
+      "id": "prepare-analyst-context",
+      "name": "Prepare Analyst Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "AUTiS5Q4Eh5r2KXQ",
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
+            "ticker": "={{$json.ticker}}",
+            "date": "={{$json.date}}",
+            "session_id": "={{$json.session_id}}",
             "market_report": "={{$json.market_report}}",
             "news_report": "={{$json.news_report}}",
-            "fundamentals_report": "={{$json.fundamentals_report}}"
+            "fundamentals_report": "={{$json.fundamentals_report}}",
+            "social_report": "={{$json.social_report}}"
+          }
+        }
+      },
+      "id": "execute-bull-researcher",
+      "name": "Call Bull Researcher Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "IgQ0ooBfvg4oPsST",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.ticker}}",
+            "date": "={{$json.date}}",
+            "session_id": "={{$json.session_id}}",
+            "market_report": "={{$json.market_report}}",
+            "news_report": "={{$json.news_report}}",
+            "fundamentals_report": "={{$json.fundamentals_report}}",
+            "social_report": "={{$json.social_report}}"
+          }
+        }
+      },
+      "id": "execute-bear-researcher",
+      "name": "Call Bear Researcher Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-debate-reports",
+      "name": "Merge Debate Reports",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1640,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Prepare Analyst Context').first().json;\nconst read = (nodeName) => {\n  try {\n    const data = $node[nodeName].json;\n    return data.output || data.text || data.content || JSON.stringify(data);\n  } catch (error) {\n    return `No output from ${nodeName}`;\n  }\n};\nreturn [{ json: {\n  ...base,\n  bull_report: read('Call Bull Researcher Sub-workflow'),\n  bear_report: read('Call Bear Researcher Sub-workflow')\n}}];"
+      },
+      "id": "prepare-debate-context",
+      "name": "Prepare Debate Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "DXp8YLaipORggHwr",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.ticker}}",
+            "date": "={{$json.date}}",
+            "session_id": "={{$json.session_id}}",
+            "market_report": "={{$json.market_report}}",
+            "news_report": "={{$json.news_report}}",
+            "fundamentals_report": "={{$json.fundamentals_report}}",
+            "social_report": "={{$json.social_report}}",
+            "bull_report": "={{$json.bull_report}}",
+            "bear_report": "={{$json.bear_report}}"
           }
         }
       },
@@ -110,9 +261,273 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        1000,
-        300
+        2100,
+        270
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Prepare Debate Context').first().json;\nconst manager = $node['Call Research Manager Sub-workflow'].json;\nreturn [{ json: {\n  ...base,\n  manager_report: manager.output || manager.text || manager.content || JSON.stringify(manager)\n}}];"
+      },
+      "id": "prepare-manager-context",
+      "name": "Prepare Manager Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "53Li8sbHz5IsPyNr",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.ticker}}",
+            "date": "={{$json.date}}",
+            "session_id": "={{$json.session_id}}",
+            "manager_report": "={{$json.manager_report}}",
+            "bull_report": "={{$json.bull_report}}",
+            "bear_report": "={{$json.bear_report}}",
+            "market_report": "={{$json.market_report}}",
+            "news_report": "={{$json.news_report}}",
+            "fundamentals_report": "={{$json.fundamentals_report}}",
+            "social_report": "={{$json.social_report}}"
+          }
+        }
+      },
+      "id": "execute-portfolio-manager",
+      "name": "Call Portfolio Manager Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        2580,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Prepare Manager Context').first().json;\nconst portfolioRaw = $node['Call Portfolio Manager Sub-workflow'].json;\nconst portfolioText = portfolioRaw.output || portfolioRaw.text || portfolioRaw.content || JSON.stringify(portfolioRaw);\nlet portfolioDecision = portfolioText;\ntry {\n  portfolioDecision = JSON.parse(portfolioText);\n} catch (error) {\n  const match = String(portfolioText).match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    try { portfolioDecision = JSON.parse(match[0]); } catch (_) {}\n  }\n}\n// logs streamed live via \"Push Log — *\" HTTP nodes → append_agent_log; keep empty so Edge does not bulk-insert duplicates.\nreturn [{ json: {\n  session_id: base.session_id,\n  ticker: base.ticker,\n  portfolio_decision: portfolioDecision,\n  logs: []\n}}];"
+      },
+      "id": "format-supervisor-response",
+      "name": "Format Supervisor Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2820,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Market Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-market-analyst",
+      "name": "Push Log — Market Analyst",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        -120
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'News Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-news-analyst",
+      "name": "Push Log — News Analyst",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        60
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Fundamentals Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-fundamentals-analyst",
+      "name": "Push Log — Fundamentals Analyst",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        240
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Social Media Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-social-analyst",
+      "name": "Push Log — Social Media Analyst",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        420
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Bull Researcher', log_type: 'debate', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-bull-researcher",
+      "name": "Push Log — Bull Researcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1680,
+        80
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Bear Researcher', log_type: 'debate', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-bear-researcher",
+      "name": "Push Log — Bear Researcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1680,
+        460
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": false,
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Research Manager', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-research-manager",
+      "name": "Push Log — Research Manager",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2280,
+        80
+      ],
+      "continueOnFail": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      }
     }
   ],
   "connections": {
@@ -133,6 +548,11 @@
             "node": "Call Fundamentals Analyst Sub-workflow",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Call Social Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -141,7 +561,12 @@
       "main": [
         [
           {
-            "node": "Merge Analyst Reports",
+            "node": "Merge Market And News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Push Log — Market Analyst",
             "type": "main",
             "index": 0
           }
@@ -152,9 +577,14 @@
       "main": [
         [
           {
-            "node": "Merge Analyst Reports",
+            "node": "Merge Market And News",
             "type": "main",
             "index": 1
+          },
+          {
+            "node": "Push Log — News Analyst",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -163,14 +593,127 @@
       "main": [
         [
           {
-            "node": "Merge Analyst Reports",
+            "node": "Merge Fundamentals And Social",
             "type": "main",
-            "index": 2
+            "index": 0
+          },
+          {
+            "node": "Push Log — Fundamentals Analyst",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     },
-    "Merge Analyst Reports": {
+    "Call Social Analyst Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Fundamentals And Social",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Push Log — Social Media Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Market And News": {
+      "main": [
+        [
+          {
+            "node": "Merge Analyst Groups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Fundamentals And Social": {
+      "main": [
+        [
+          {
+            "node": "Merge Analyst Groups",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Analyst Groups": {
+      "main": [
+        [
+          {
+            "node": "Prepare Analyst Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Analyst Context": {
+      "main": [
+        [
+          {
+            "node": "Call Bull Researcher Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Bear Researcher Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Bull Researcher Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Debate Reports",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Push Log — Bull Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Bear Researcher Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Debate Reports",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Push Log — Bear Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Debate Reports": {
+      "main": [
+        [
+          {
+            "node": "Prepare Debate Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Debate Context": {
       "main": [
         [
           {
@@ -180,11 +723,49 @@
           }
         ]
       ]
+    },
+    "Call Research Manager Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Prepare Manager Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Push Log — Research Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Manager Context": {
+      "main": [
+        [
+          {
+            "node": "Call Portfolio Manager Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Portfolio Manager Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Format Supervisor Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "UDRkHgYzqs3GBaat",
-  "updatedAt": "2026-05-01T16:31:02.684Z",
+  "updatedAt": "2026-05-02T09:39:22.050Z",
   "createdAt": "2026-05-01T16:31:02.684Z"
 }

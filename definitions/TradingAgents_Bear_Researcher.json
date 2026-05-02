@@ -15,7 +15,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
+        "text": "=Ticker: {{$json.ticker}}\nDate: {{$json.date}}\n\nMarket report:\n{{$json.market_report}}\n\nNews report:\n{{$json.news_report}}\n\nFundamentals report:\n{{$json.fundamentals_report}}\n\nSocial report:\n{{$json.social_report}}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a Bear Researcher. Construct the strongest possible bearish argument against holding the asset over the next 24 hours."
@@ -56,15 +56,7 @@
       "parameters": {
         "method": "GET",
         "url": "https://eodhd.com/api/news?s={{$json.ticker}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "httpQueryAuth"
@@ -120,9 +112,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "IgQ0ooBfvg4oPsST",
-  "updatedAt": "2026-05-02T08:13:43.023Z",
+  "updatedAt": "2026-05-02T09:39:07.296Z",
   "createdAt": "2026-05-02T06:46:02.639Z"
 }

@@ -15,7 +15,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
+        "text": "=Ticker: {{$json.ticker}}\nDate: {{$json.date}}\n\nResearch Manager briefing:\n{{$json.manager_report}}\n\nBull case:\n{{$json.bull_report}}\n\nBear case:\n{{$json.bear_report}}\n\nMarket report:\n{{$json.market_report}}\n\nNews report:\n{{$json.news_report}}\n\nFundamentals report:\n{{$json.fundamentals_report}}\n\nSocial report:\n{{$json.social_report}}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are the Portfolio Manager. Make the final BUY, SELL, or HOLD decision for a strict 24-hour trading horizon based on all research. You MUST output your final decision in strict JSON format: {\"decision\": \"BUY|SELL|HOLD\", \"confidence\": \"High|Medium|Low\", \"thesis\": \"Your detailed explanation here...\"}"
@@ -55,19 +55,10 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://localhost:8001/research?ticker={{$json.ticker}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
+        "sendHeaders": false,
         "options": {},
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "none"
+        "authentication": "none"
       },
       "id": "tool-node",
       "name": "Yahoo Deep Research Tool",
@@ -76,13 +67,7 @@
       "position": [
         700,
         500
-      ],
-      "credentials": {
-        "none": {
-          "id": "",
-          "name": ""
-        }
-      }
+      ]
     }
   ],
   "connections": {
@@ -120,9 +105,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "53Li8sbHz5IsPyNr",
-  "updatedAt": "2026-05-02T08:13:44.078Z",
+  "updatedAt": "2026-05-02T09:39:08.809Z",
   "createdAt": "2026-05-02T06:46:04.208Z"
 }

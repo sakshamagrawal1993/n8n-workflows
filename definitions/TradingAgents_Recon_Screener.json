@@ -2,23 +2,29 @@
   "name": "TradingAgents - Recon Screener",
   "nodes": [
     {
-      "parameters": {},
-      "id": "execute-workflow-trigger",
-      "name": "Execute Workflow Trigger",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trading-agents-recon",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-recon-node",
+      "name": "Webhook (Recon Trigger)",
+      "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
         200,
         300
-      ]
+      ],
+      "webhookId": "trading-agents-recon"
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
+        "text": "=Tickers: {{$json.body.tickers || $json.tickers}}\nDate: {{$json.body.date || $json.date}}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a Reconnaissance Screener. Analyze a batch of tickers and return the top 3 with the strongest momentum or deepest discount for a 24-hour trade. Format output as a JSON array of tickers."
+          "systemMessage": "You are a Reconnaissance Screener. Analyze a batch of tickers and return the top 3 with the strongest momentum or deepest discount for a 24-hour trade. Format output as a JSON array of tickers only."
         }
       },
       "id": "agent-node",
@@ -55,16 +61,8 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://financialmodelingprep.com/api/v3/quote/{{$json.tickers}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "url": "https://financialmodelingprep.com/api/v3/quote/{{$json.body.tickers || $json.tickers}}",
+        "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "httpQueryAuth"
@@ -83,14 +81,38 @@
           "name": "FMP Key"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output || $json.text || $json.content || JSON.stringify($json);\nlet opportunities = [];\ntry {\n  const parsed = JSON.parse(raw);\n  opportunities = Array.isArray(parsed) ? parsed : parsed.opportunities || [];\n} catch (error) {\n  const match = String(raw).match(/\\[[\\s\\S]*\\]/);\n  if (match) {\n    try { opportunities = JSON.parse(match[0]); } catch (_) {}\n  }\n}\nreturn [{ json: { opportunities } }];"
+      },
+      "id": "format-recon-response",
+      "name": "Format Recon Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        300
+      ]
     }
   ],
   "connections": {
-    "Execute Workflow Trigger": {
+    "Webhook (Recon Trigger)": {
       "main": [
         [
           {
             "node": "Recon Screener",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recon Screener": {
+      "main": [
+        [
+          {
+            "node": "Format Recon Response",
             "type": "main",
             "index": 0
           }
@@ -120,9 +142,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "sqhpR7pc8WqFXOUY",
-  "updatedAt": "2026-05-02T08:13:44.688Z",
+  "updatedAt": "2026-05-02T09:39:09.555Z",
   "createdAt": "2026-05-02T06:46:04.992Z"
 }

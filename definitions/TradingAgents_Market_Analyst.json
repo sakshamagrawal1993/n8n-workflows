@@ -56,15 +56,7 @@
       "parameters": {
         "method": "GET",
         "url": "https://api.tiingo.com/tiingo/daily/{{$json.ticker}}/prices",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "httpHeaderAuth"
@@ -120,9 +112,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "YeGEiKF7ZndLF8YN",
-  "updatedAt": "2026-05-02T08:13:44.295Z",
+  "updatedAt": "2026-05-02T09:39:09.073Z",
   "createdAt": "2026-05-02T06:46:04.494Z"
 }

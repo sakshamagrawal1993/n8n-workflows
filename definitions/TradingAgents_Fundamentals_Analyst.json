@@ -55,19 +55,10 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://localhost:8001/research?ticker={{$json.ticker}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
+        "sendHeaders": false,
         "options": {},
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "none"
+        "authentication": "none"
       },
       "id": "tool-node",
       "name": "Yahoo Deep Research Tool",
@@ -76,13 +67,7 @@
       "position": [
         700,
         500
-      ],
-      "credentials": {
-        "none": {
-          "id": "",
-          "name": ""
-        }
-      }
+      ]
     }
   ],
   "connections": {
@@ -120,9 +105,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "qXgHkMpiqmOJqDqv",
-  "updatedAt": "2026-05-02T08:13:45.307Z",
+  "updatedAt": "2026-05-02T09:39:10.230Z",
   "createdAt": "2026-05-02T06:46:05.746Z"
 }

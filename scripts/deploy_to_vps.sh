@@ -18,4 +18,6 @@ scp yfinance_server.py Dockerfile docker-compose.yml $VPS_USER@$VPS_IP:$REMOTE_D
 echo "🏗️ Building and starting container..."
 ssh $VPS_USER@$VPS_IP "cd $REMOTE_DIR && docker compose up -d --build"
 
-echo "✅ Deployment complete! API available at http://$VPS_IP:8001/research?ticker=AAPL"
+echo "✅ Deployment complete!"
+echo "   REST research: http://$VPS_IP:8001/research?ticker=AAPL"
+echo "   WebSocket ticks: ws://$VPS_IP:8001/ws  (Trading Agents watchlist; redeploy after changing yfinance_server.py)"

@@ -56,15 +56,7 @@
       "parameters": {
         "method": "GET",
         "url": "https://data.alpaca.markets/v1beta1/news?symbols={{$json.ticker}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
-        },
+        "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "httpCustomAuth"
@@ -120,9 +112,9 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {},
   "id": "TIJbwjW9wXs7Nz0f",
-  "updatedAt": "2026-05-02T08:13:43.781Z",
+  "updatedAt": "2026-05-02T09:39:08.462Z",
   "createdAt": "2026-05-02T06:46:03.780Z"
 }
