@@ -1,0 +1,190 @@
+{
+  "name": "TradingAgents - Supervisor Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trading-agents-run",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-supervisor-node",
+      "name": "Webhook (Trigger)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "trading-agents-run"
+    },
+    {
+      "parameters": {
+        "workflowId": "market-analyst-id",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.body.ticker}}",
+            "date": "={{$json.body.date}}"
+          }
+        }
+      },
+      "id": "execute-market-analyst",
+      "name": "Call Market Analyst Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        500,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "news-analyst-id",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.body.ticker}}",
+            "date": "={{$json.body.date}}"
+          }
+        }
+      },
+      "id": "execute-news-analyst",
+      "name": "Call News Analyst Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "fundamentals-analyst-id",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticker": "={{$json.body.ticker}}",
+            "date": "={{$json.body.date}}"
+          }
+        }
+      },
+      "id": "execute-fundamentals-analyst",
+      "name": "Call Fundamentals Analyst Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        500,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-analysts",
+      "name": "Merge Analyst Reports",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "research-manager-id",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "market_report": "={{$json.market_report}}",
+            "news_report": "={{$json.news_report}}",
+            "fundamentals_report": "={{$json.fundamentals_report}}"
+          }
+        }
+      },
+      "id": "execute-research-manager",
+      "name": "Call Research Manager Sub-workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (Trigger)": {
+      "main": [
+        [
+          {
+            "node": "Call Market Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call News Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Fundamentals Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Market Analyst Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Analyst Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call News Analyst Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Analyst Reports",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Call Fundamentals Analyst Sub-workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Analyst Reports",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge Analyst Reports": {
+      "main": [
+        [
+          {
+            "node": "Call Research Manager Sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "UDRkHgYzqs3GBaat",
+  "updatedAt": "2026-05-01T16:31:02.684Z",
+  "createdAt": "2026-05-01T16:31:02.684Z"
+}

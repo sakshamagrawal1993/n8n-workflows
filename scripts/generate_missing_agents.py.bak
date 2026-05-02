@@ -1,0 +1,140 @@
+import json
+import os
+
+agents = [
+    {
+        "id": "fundamentals-analyst",
+        "name": "Fundamentals Analyst",
+        "prompt": "You are a Fundamentals Analyst. Fetch financial statements and evaluate company health.",
+        "tool": "Get Financials Tool",
+        "url": "https://www.alphavantage.co/query?function=OVERVIEW&symbol={{$json.ticker}}"
+    },
+    {
+        "id": "news-analyst",
+        "name": "News Analyst",
+        "prompt": "You are a News Analyst. Fetch recent news and analyze sentiment.",
+        "tool": "Get News Tool",
+        "url": "https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={{$json.ticker}}"
+    },
+    {
+        "id": "social-media-analyst",
+        "name": "Social Media Analyst",
+        "prompt": "You are a Social Media Analyst. Evaluate retail sentiment on Reddit/X.",
+        "tool": "Get Social Sentiment Tool",
+        "url": "https://tradestie.com/api/v1/apps/reddit"
+    },
+    {
+        "id": "bull-researcher",
+        "name": "Bull Researcher",
+        "prompt": "You are a Bull Researcher. Construct the strongest possible bull thesis for the ticker.",
+        "tool": "Research Tool",
+        "url": "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={{$json.ticker}}"
+    },
+    {
+        "id": "bear-researcher",
+        "name": "Bear Researcher",
+        "prompt": "You are a Bear Researcher. Construct the strongest possible bear thesis highlighting risks.",
+        "tool": "Research Tool",
+        "url": "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={{$json.ticker}}"
+    },
+    {
+        "id": "research-manager",
+        "name": "Research Manager",
+        "prompt": "You are a Research Manager. Synthesize all reports and present to the Portfolio Manager.",
+        "tool": "Synthesize Tool",
+        "url": "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={{$json.ticker}}"
+    },
+    {
+        "id": "portfolio-manager",
+        "name": "Portfolio Manager",
+        "prompt": "You are the Portfolio Manager. Make the final BUY, SELL, or HOLD decision based on all research.",
+        "tool": "Decision Engine Tool",
+        "url": "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={{$json.ticker}}"
+    }
+]
+
+definitions_dir = "/Users/sakshamagrawal/Documents/Projects/n8n-workflows/definitions"
+os.makedirs(definitions_dir, exist_ok=True)
+
+for agent in agents:
+    workflow = {
+        "name": f"TradingAgents - {agent['name']}",
+        "nodes": [
+            {
+                "parameters": {},
+                "id": "execute-workflow-trigger",
+                "name": "Execute Workflow Trigger",
+                "type": "n8n-nodes-base.executeWorkflowTrigger",
+                "typeVersion": 1,
+                "position": [200, 300]
+            },
+            {
+                "parameters": {
+                    "promptType": "define",
+                    "text": "={{$json.ticker}} on {{$json.date}}",
+                    "hasOutputParser": False,
+                    "options": {
+                        "systemMessage": agent['prompt']
+                    }
+                },
+                "id": "agent-node",
+                "name": agent['name'],
+                "type": "@n8n/n8n-nodes-langchain.agent",
+                "typeVersion": 1.7,
+                "position": [500, 300]
+            },
+            {
+                "parameters": {
+                    "model": "gpt-4o",
+                    "options": {
+                        "temperature": 0.2
+                    }
+                },
+                "id": "llm-node",
+                "name": "OpenAI Model",
+                "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+                "typeVersion": 1,
+                "position": [500, 500]
+            },
+            {
+                "parameters": {
+                    "method": "GET",
+                    "url": agent['url'],
+                    "sendHeaders": True,
+                    "headerParameters": {
+                        "parameters": [
+                            {
+                                "name": "Accept",
+                                "value": "application/json"
+                            }
+                        ]
+                    },
+                    "options": {}
+                },
+                "id": "tool-node",
+                "name": agent['tool'],
+                "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+                "typeVersion": 1.1,
+                "position": [700, 500]
+            }
+        ],
+        "connections": {
+            "Execute Workflow Trigger": {
+                "main": [[{"node": agent['name'], "type": "main", "index": 0}]]
+            },
+            "OpenAI Model": {
+                "ai_languageModel": [[{"node": agent['name'], "type": "ai_languageModel", "index": 0}]]
+            },
+            agent['tool']: {
+                "ai_tool": [[{"node": agent['name'], "type": "ai_tool", "index": 0}]]
+            }
+        },
+        "active": False,
+        "settings": {}
+    }
+    
+    file_path = os.path.join(definitions_dir, f"TradingAgents_{agent['name'].replace(' ', '_')}.json")
+    with open(file_path, "w") as f:
+        json.dump(workflow, f, indent=2)
+
+print("Generated all workflow definitions.")

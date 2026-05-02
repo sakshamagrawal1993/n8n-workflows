@@ -1,0 +1,128 @@
+{
+  "name": "TradingAgents - News Analyst",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "execute-workflow-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.ticker}} on {{$json.date}}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a News Analyst. Fetch the latest news and assess market sentiment, focusing on catalysts likely to impact the stock over the next 24 hours."
+        }
+      },
+      "id": "agent-node",
+      "name": "News Analyst",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "llm-node",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        500,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://data.alpaca.markets/v1beta1/news?symbols={{$json.ticker}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpCustomAuth"
+      },
+      "id": "tool-node",
+      "name": "Get News Tool (Alpaca)",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        500
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "Fn81k84jOum8RfUU",
+          "name": "Alpaca Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "News Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "News Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get News Tool (Alpaca)": {
+      "ai_tool": [
+        [
+          {
+            "node": "News Analyst",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "TIJbwjW9wXs7Nz0f",
+  "updatedAt": "2026-05-02T08:13:43.781Z",
+  "createdAt": "2026-05-02T06:46:03.780Z"
+}

@@ -1,0 +1,128 @@
+{
+  "name": "TradingAgents - Social Media Analyst",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "execute-workflow-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.ticker}} on {{$json.date}}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a Social Media Analyst. Review social sentiment and return a mood summary, emphasizing short-term hype or panic for a 24-hour trade."
+        }
+      },
+      "id": "agent-node",
+      "name": "Social Media Analyst",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "llm-node",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        500,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://lunarcrush.com/api/4/public/coins/{{$json.ticker}}/meta",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth"
+      },
+      "id": "tool-node",
+      "name": "Social Sentiment Tool (LunarCrush)",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        500
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "p9h7gEqpN0UA9E32",
+          "name": "LunarCrush Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Social Media Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Social Media Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Sentiment Tool (LunarCrush)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Social Media Analyst",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "bREGC66gC2ppRSio",
+  "updatedAt": "2026-05-02T08:13:44.437Z",
+  "createdAt": "2026-05-02T06:46:04.691Z"
+}

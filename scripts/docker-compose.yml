@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  yfinance-research:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: yfinance-research-api
+    ports:
+      - "8001:8001"
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1

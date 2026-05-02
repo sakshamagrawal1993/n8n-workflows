@@ -1,0 +1,128 @@
+{
+  "name": "TradingAgents - Portfolio Manager",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "execute-workflow-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.ticker}} on {{$json.date}}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are the Portfolio Manager. Make the final BUY, SELL, or HOLD decision for a strict 24-hour trading horizon based on all research. You MUST output your final decision in strict JSON format: {\"decision\": \"BUY|SELL|HOLD\", \"confidence\": \"High|Medium|Low\", \"thesis\": \"Your detailed explanation here...\"}"
+        }
+      },
+      "id": "agent-node",
+      "name": "Portfolio Manager",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "llm-node",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        500,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8001/research?ticker={{$json.ticker}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "none"
+      },
+      "id": "tool-node",
+      "name": "Yahoo Deep Research Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        500
+      ],
+      "credentials": {
+        "none": {
+          "id": "",
+          "name": ""
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Portfolio Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Portfolio Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Yahoo Deep Research Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Portfolio Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "53Li8sbHz5IsPyNr",
+  "updatedAt": "2026-05-02T08:13:44.078Z",
+  "createdAt": "2026-05-02T06:46:04.208Z"
+}
