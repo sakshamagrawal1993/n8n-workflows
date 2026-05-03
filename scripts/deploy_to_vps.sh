@@ -12,7 +12,7 @@ ssh $VPS_USER@$VPS_IP "mkdir -p $REMOTE_DIR"
 
 # Copy files
 echo "📦 Copying files..."
-scp yfinance_server.py Dockerfile docker-compose.yml $VPS_USER@$VPS_IP:$REMOTE_DIR/
+scp yfinance_server.py Dockerfile docker-compose.yml docker-compose.traefik.yml $VPS_USER@$VPS_IP:$REMOTE_DIR/
 
 # Build and Start
 echo "🏗️ Building and starting container..."

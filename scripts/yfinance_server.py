@@ -1,13 +1,35 @@
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.websockets import WebSocketState
 import yfinance as yf
 import json
 import asyncio
+import logging
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+log = logging.getLogger("yfinance_server")
+
 app = FastAPI()
+
+# --- Process-wide spacing for every Yahoo call (yfinance -> Yahoo Finance). ---
+YAHOO_MIN_INTERVAL_SEC = 0.85
+_yahoo_throttle_lock = threading.Lock()
+_last_yahoo_mono = 0.0
+
+
+def _throttle_yahoo_call() -> None:
+    """Ensure we do not hammer Yahoo from parallel WS tasks + /research."""
+    global _last_yahoo_mono
+    with _yahoo_throttle_lock:
+        now = time.monotonic()
+        wait = YAHOO_MIN_INTERVAL_SEC - (now - _last_yahoo_mono)
+        if wait > 0:
+            time.sleep(wait)
+        _last_yahoo_mono = time.monotonic()
+
 
 # --- /research: Yahoo rate-limits aggressive parallel .info calls. Cache + throttle. ---
 RESEARCH_CACHE_TTL_SEC = 600  # 10 minutes per ticker
@@ -17,11 +39,27 @@ _research_cache_lock = threading.Lock()
 _research_last_fetch_mono = 0.0
 _research_fetch_lock = threading.Lock()
 
-# --- WebSocket price loop: polling 50 symbols every few seconds still hits Yahoo. ---
-WS_POLL_INTERVAL_SEC = 6.0
-WS_PRICE_CACHE_TTL_SEC = 12.0  # reuse last quote if younger than this
+# --- WebSocket price loop: never fetch all symbols in parallel (instant 429 + huge logs). ---
+WS_POLL_INTERVAL_SEC = 12.0
+WS_PRICE_CACHE_TTL_SEC = 30.0  # reuse last quote longer to cut Yahoo calls
 _ws_price_cache: dict[str, tuple[float, tuple]] = {}
 _ws_price_lock = threading.Lock()
+
+# Throttled logging for repeated Yahoo failures (stops disk fill from print-per-symbol).
+_rate_warn_last_mono = 0.0
+_rate_warn_lock = threading.Lock()
+_RATE_WARN_INTERVAL_SEC = 45.0
+
+
+def _log_yahoo_noise(message: str) -> None:
+    """One warning per window instead of thousands of identical lines."""
+    global _rate_warn_last_mono
+    with _rate_warn_lock:
+        now = time.monotonic()
+        if now - _rate_warn_last_mono < _RATE_WARN_INTERVAL_SEC:
+            return
+        _rate_warn_last_mono = now
+    log.warning("%s (suppressing similar messages for ~%ss)", message, int(_RATE_WARN_INTERVAL_SEC))
 
 # Add CORS middleware
 app.add_middleware(
@@ -70,6 +108,7 @@ def _fetch_info_throttled(ticker_key: str) -> dict:
     last_err = None
     for attempt in range(3):
         try:
+            _throttle_yahoo_call()
             t = yf.Ticker(ticker_key)
             info = t.info if isinstance(t.info, dict) else {}
             has_data = bool(
@@ -139,6 +178,7 @@ def _last_price_sync(symbol: str):
             return cached[1]
 
     try:
+        _throttle_yahoo_call()
         t = yf.Ticker(sym)
         fi = getattr(t, "fast_info", None) or {}
         p = fi.get("last_price") or fi.get("lastPrice") or fi.get("last_price")
@@ -147,6 +187,7 @@ def _last_price_sync(symbol: str):
             with _ws_price_lock:
                 _ws_price_cache[sym] = (time.time(), out)
             return out
+        _throttle_yahoo_call()
         h = t.history(period="5d", interval="1h", auto_adjust=False)
         if h is not None and not h.empty and "Close" in h.columns:
             last = h["Close"].dropna().iloc[-1]
@@ -155,17 +196,32 @@ def _last_price_sync(symbol: str):
                 _ws_price_cache[sym] = (time.time(), out)
             return out
     except Exception as ex:
-        print(f"price fetch {sym}: {ex}")
+        msg = str(ex).lower()
+        if "too many" in msg or "rate limit" in msg or "429" in msg:
+            _log_yahoo_noise(f"Yahoo rate limited while fetching {sym}")
+        else:
+            log.debug("price fetch %s: %s", sym, ex)
     return None
+
+
+async def _safe_send_json(websocket: WebSocket, payload: dict) -> bool:
+    if websocket.client_state != WebSocketState.CONNECTED:
+        return False
+    try:
+        await websocket.send_json(payload)
+        return True
+    except (WebSocketDisconnect, RuntimeError, ConnectionError) as e:
+        log.debug("WS send skipped: %s", e)
+        return False
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("Client connected to Python WS Bridge")
+    log.info("Client connected to Python WS Bridge")
 
-    # Bounded thread pool: Yahoo rate-limits; fewer workers + longer interval between rounds.
-    executor = ThreadPoolExecutor(max_workers=4)
+    # Single worker: WS loop is sequential per symbol; avoids parallel Yahoo blast.
+    executor = ThreadPoolExecutor(max_workers=1)
 
     try:
         while True:
@@ -175,38 +231,44 @@ async def websocket_endpoint(websocket: WebSocket):
 
             while True:
                 try:
+                    if websocket.client_state != WebSocketState.CONNECTED:
+                        return
+
                     clean_tickers = [t.strip().upper() for t in tickers if t.strip()]
                     if not clean_tickers:
                         break
 
                     loop = asyncio.get_running_loop()
-                    futures = [
-                        loop.run_in_executor(executor, _last_price_sync, sym)
-                        for sym in clean_tickers
-                    ]
-                    results = await asyncio.gather(*futures)
-
                     updates = {}
-                    for r in results:
+                    for sym in clean_tickers:
+                        if websocket.client_state != WebSocketState.CONNECTED:
+                            return
+                        r = await loop.run_in_executor(executor, _last_price_sync, sym)
                         if r:
-                            sym, price, ts = r
-                            updates[sym] = {"price": price, "time": ts}
+                            s, price, ts = r
+                            updates[s] = {"price": price, "time": ts}
 
                     if updates:
-                        await websocket.send_json({"type": "update", "data": updates})
+                        if not await _safe_send_json(websocket, {"type": "update", "data": updates}):
+                            return
 
                     await asyncio.sleep(WS_POLL_INTERVAL_SEC)
+                except WebSocketDisconnect:
+                    return
                 except Exception as e:
-                    print(f"Streaming error: {e}")
-                    await websocket.send_json({"type": "error", "message": str(e)})
+                    log.exception("Streaming error: %s", e)
+                    if not await _safe_send_json(
+                        websocket, {"type": "error", "message": str(e)}
+                    ):
+                        return
                     await asyncio.sleep(5)
                     continue
     except WebSocketDisconnect:
-        print("Client disconnected")
+        log.info("Client disconnected")
     except Exception as e:
-        print(f"WS Error: {e}")
+        log.exception("WS Error: %s", e)
     finally:
-        executor.shutdown(wait=False, cancel_futures=True)
+        executor.shutdown(wait=True, cancel_futures=False)
 
 if __name__ == "__main__":
     import uvicorn

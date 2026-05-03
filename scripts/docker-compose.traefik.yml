@@ -1,0 +1,32 @@
+# Overlay: TLS + WSS via Traefik (same host as n8n).
+#
+# 1) DNS: A record e.g. yfinance.saksham-experiments.com -> VPS IP
+# 2) On VPS: find Traefik's shared network, e.g.
+#      docker inspect traefik --format '{{range $k := .NetworkSettings.Networks}}{{$k}} {{end}}'
+#    or: docker network ls
+# 3) Set env in shell or a .env next to this file:
+#      TRAEFIK_PUBLIC_NETWORK=root_default    # must match network Traefik uses
+#      YFINANCE_WS_HOST=yfinance.saksham-experiments.com
+#      TRAEFIK_CERT_RESOLVER=letsencrypt      # must match traefik.yml certResolvers name
+# 4) Deploy:
+#      docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d --build
+#
+# Frontend (Vercel): VITE_TRADING_AGENTS_VPS_WS_URL=wss://yfinance.saksham-experiments.com/ws
+
+services:
+  yfinance-research:
+    networks:
+      - default
+      - traefik_public
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_PUBLIC_NETWORK:-root_default}
+      - traefik.http.routers.yfinance.rule=Host(`${YFINANCE_WS_HOST}`)
+      - traefik.http.routers.yfinance.entrypoints=websecure
+      - traefik.http.routers.yfinance.tls.certresolver=${TRAEFIK_CERT_RESOLVER}
+      - traefik.http.services.yfinance.loadbalancer.server.port=8001
+
+networks:
+  traefik_public:
+    external: true
+    name: ${TRAEFIK_PUBLIC_NETWORK:-root_default}
