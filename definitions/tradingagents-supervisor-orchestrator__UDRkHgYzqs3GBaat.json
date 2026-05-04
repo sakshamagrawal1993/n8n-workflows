@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T10:52:28.698Z",
+  "updatedAt": "2026-05-04T11:47:33.407Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -350,235 +350,339 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Technical Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "Technical Analyst",
+            "log_type": "research",
+            "content": "={{ String($(\"Call Technical Analyst Sub-workflow\").first().json.output || $(\"Call Technical Analyst Sub-workflow\").first().json.text || $(\"Call Technical Analyst Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-technical-analyst",
       "name": "Push Log — Technical Analyst",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         480,
         -304
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'News Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "News Analyst",
+            "log_type": "research",
+            "content": "={{ String($(\"Call News Analyst Sub-workflow\").first().json.output || $(\"Call News Analyst Sub-workflow\").first().json.text || $(\"Call News Analyst Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-news-analyst",
       "name": "Push Log — News Analyst",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         464,
         -32
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Fundamentals Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "Fundamentals Analyst",
+            "log_type": "research",
+            "content": "={{ String($(\"Call Fundamentals Analyst Sub-workflow\").first().json.output || $(\"Call Fundamentals Analyst Sub-workflow\").first().json.text || $(\"Call Fundamentals Analyst Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-fundamentals-analyst",
       "name": "Push Log — Fundamentals Analyst",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         432,
         432
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Social Media Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "Social Media Analyst",
+            "log_type": "research",
+            "content": "={{ String($(\"Call Social Analyst Sub-workflow\").first().json.output || $(\"Call Social Analyst Sub-workflow\").first().json.text || $(\"Call Social Analyst Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-social-analyst",
       "name": "Push Log — Social Media Analyst",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         432,
         624
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Bull Researcher', log_type: 'debate', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "Bull Researcher",
+            "log_type": "debate",
+            "content": "={{ String($(\"Call Bull Researcher Sub-workflow\").first().json.output || $(\"Call Bull Researcher Sub-workflow\").first().json.text || $(\"Call Bull Researcher Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-bull-researcher",
       "name": "Push Log — Bull Researcher",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         1632,
         -240
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Bear Researcher', log_type: 'debate', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "Bear Researcher",
+            "log_type": "debate",
+            "content": "={{ String($(\"Call Bear Researcher Sub-workflow\").first().json.output || $(\"Call Bear Researcher Sub-workflow\").first().json.text || $(\"Call Bear Researcher Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-bear-researcher",
       "name": "Push Log — Bear Researcher",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         1664,
         640
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Research Manager', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
+            "agent_role": "Research Manager",
+            "log_type": "research",
+            "content": "={{ String($(\"Call Research Manager Sub-workflow\").first().json.output || $(\"Call Research Manager Sub-workflow\").first().json.text || $(\"Call Research Manager Sub-workflow\").first().json.content || '') }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-research-manager",
       "name": "Push Log — Research Manager",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         2288,
         80
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpCustomAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $json.session_id, agent_role: 'Portfolio Manager', log_type: 'decision', content: JSON.stringify($json.portfolio_decision) }) }}",
-        "options": {
-          "timeout": 45000
-        }
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.session_id }}",
+            "agent_role": "Portfolio Manager",
+            "log_type": "decision",
+            "content": "={{ JSON.stringify($json.portfolio_decision || {}) }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
       },
       "id": "ta-push-log-portfolio-manager",
       "name": "Push Log — Portfolio Manager",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         3080,
         160
       ],
+      "continueOnFail": true,
       "credentials": {
-        "httpCustomAuth": {
-          "id": "SjXW7AtzN74GFV8y",
-          "name": "Supabase trading-agents-proxy"
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
         }
-      },
-      "continueOnFail": true
+      }
     },
     {
       "parameters": {
@@ -596,6 +700,27 @@
         460,
         500
       ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE trading_sessions SET status = 'completed', final_decision = '{{ $json.portfolio_decision.decision }}', executive_summary = '{{ $json.portfolio_decision.thesis }}', updated_at = NOW() WHERE id = '{{ $json.session_id }}'",
+        "options": {}
+      },
+      "id": "update-session-complete",
+      "name": "Update Session Complete",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2400,
+        500
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      }
     }
   ],
   "connections": {
@@ -840,6 +965,11 @@
         [
           {
             "node": "Push Log — Portfolio Manager",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Session Complete",
             "type": "main",
             "index": 0
           }
