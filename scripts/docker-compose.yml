@@ -11,6 +11,7 @@ services:
     restart: always
     environment:
       - PYTHONUNBUFFERED=1
+      # - YFINANCE_WS_POLL_LOG=1   # INFO: one line per WS poll cycle (~WS_POLL_INTERVAL_SEC)
     logging:
       driver: json-file
       options:

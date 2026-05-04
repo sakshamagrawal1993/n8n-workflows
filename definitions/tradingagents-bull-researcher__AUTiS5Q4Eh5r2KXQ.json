@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T03:19:22.513Z",
+  "updatedAt": "2026-05-04T08:38:53.084Z",
   "createdAt": "2026-05-02T06:46:04.350Z",
   "id": "AUTiS5Q4Eh5r2KXQ",
   "name": "TradingAgents - Bull Researcher",
@@ -20,7 +20,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n\\n' + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a Bull Researcher. Construct the strongest possible bullish argument for holding the asset over the next 24 hours."

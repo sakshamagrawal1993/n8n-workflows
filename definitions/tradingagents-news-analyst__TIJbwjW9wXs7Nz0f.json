@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T03:19:24.957Z",
+  "updatedAt": "2026-05-04T08:38:55.289Z",
   "createdAt": "2026-05-02T06:46:03.780Z",
   "id": "TIJbwjW9wXs7Nz0f",
   "name": "TradingAgents - News Analyst",
@@ -20,7 +20,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a News Analyst. Fetch the latest news and assess market sentiment, focusing on catalysts likely to impact the stock over the next 24 hours."

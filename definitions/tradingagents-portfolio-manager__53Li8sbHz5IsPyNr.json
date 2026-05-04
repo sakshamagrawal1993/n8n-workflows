@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T03:19:22.316Z",
+  "updatedAt": "2026-05-04T08:38:52.928Z",
   "createdAt": "2026-05-02T06:46:04.208Z",
   "id": "53Li8sbHz5IsPyNr",
   "name": "TradingAgents - Portfolio Manager",
@@ -20,7 +20,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nResearch Manager briefing:\\n' + $json.manager_report + '\\n\\nBull case:\\n' + $json.bull_report + '\\n\\nBear case:\\n' + $json.bear_report + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n\\n' + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nResearch Manager briefing:\\n' + $json.manager_report + '\\n\\nBull case:\\n' + $json.bull_report + '\\n\\nBear case:\\n' + $json.bear_report + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are the Portfolio Manager. Make the final BUY, SELL, or HOLD decision for a strict 24-hour trading horizon based on all research. You MUST output your final decision in strict JSON format: {\"decision\": \"BUY|SELL|HOLD\", \"confidence\": \"High|Medium|Low\", \"thesis\": \"Your detailed explanation here...\"}"

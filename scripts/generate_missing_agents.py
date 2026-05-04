@@ -53,9 +53,9 @@ agents = [
         "credName": "LunarCrush Key"
     },
     {
-        "id": "market-analyst",
-        "name": "Market Analyst",
-        "prompt": "You are a Market Analyst. Review technical indicators and provide a technical rating for a short-term 24-hour hold.",
+        "id": "technical-analyst",
+        "name": "Technical Analyst",
+        "prompt": "You are a Technical Analyst. Review technical indicators and provide a technical rating for a short-term 24-hour hold.",
         "tool": "Technical Indicator Tool (Tiingo)",
         "url": "https://api.tiingo.com/tiingo/daily/{{$json.ticker}}/prices",
         "credType": "httpHeaderAuth",

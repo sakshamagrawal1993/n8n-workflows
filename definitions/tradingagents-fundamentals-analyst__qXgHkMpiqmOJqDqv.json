@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T03:19:25.710Z",
+  "updatedAt": "2026-05-04T08:38:56.016Z",
   "createdAt": "2026-05-02T06:46:05.746Z",
   "id": "qXgHkMpiqmOJqDqv",
   "name": "TradingAgents - Fundamentals Analyst",
@@ -20,7 +20,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a Fundamentals Analyst. Fetch financial statements and evaluate company health, focusing on metrics that might cause significant price movement within the next 24 hours."

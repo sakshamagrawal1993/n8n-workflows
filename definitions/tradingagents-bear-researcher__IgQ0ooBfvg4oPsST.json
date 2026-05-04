@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T03:19:23.805Z",
+  "updatedAt": "2026-05-04T08:38:54.185Z",
   "createdAt": "2026-05-02T06:46:02.639Z",
   "id": "IgQ0ooBfvg4oPsST",
   "name": "TradingAgents - Bear Researcher",
@@ -20,7 +20,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n\\n' + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a Bear Researcher. Construct the strongest possible bearish argument against holding the asset over the next 24 hours."

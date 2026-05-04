@@ -1,8 +1,31 @@
+"""
+FastAPI server for Yahoo Finance data via yfinance (`/research`, WebSocket `/ws`).
+
+Time between stock price fetches (this process only; Yahoo may additionally delay quotes
+vs the exchange by exchange/data-tier rules):
+
+| Constant | Default | Role |
+|----------|---------|------|
+| YAHOO_MIN_INTERVAL_SEC | 0.85 s | Minimum gap between any two Yahoo-backed yfinance calls |
+| WS_POLL_INTERVAL_SEC | 12 s | Sleep after each WebSocket batch over the watchlist |
+| WS_PRICE_CACHE_TTL_SEC | 30 s | Reuse last quote for a symbol without calling Yahoo |
+| RESEARCH_MIN_INTERVAL_SEC | 2 s | Minimum gap between `.info` research fetches |
+| RESEARCH_CACHE_TTL_SEC | 600 s | `/research` response cache per ticker |
+
+WebSocket prices: symbols are polled sequentially; each symbol may use up to two throttled
+Yahoo paths (`fast_info` then `history` fallback), so at least ~2 * YAHOO_MIN_INTERVAL_SEC of
+enforced spacing between those two calls, plus network latency.
+
+Observability: set environment variable YFINANCE_WS_POLL_LOG=1 for INFO logs each WS poll
+cycle (timestamps in docker logs or the uvicorn terminal show cadence).
+"""
+
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocketState
 import yfinance as yf
 import json
+import os
 import asyncio
 import logging
 import time
@@ -42,6 +65,8 @@ _research_fetch_lock = threading.Lock()
 # --- WebSocket price loop: never fetch all symbols in parallel (instant 429 + huge logs). ---
 WS_POLL_INTERVAL_SEC = 12.0
 WS_PRICE_CACHE_TTL_SEC = 30.0  # reuse last quote longer to cut Yahoo calls
+# Set YFINANCE_WS_POLL_LOG=1 to log each WS poll cycle (timestamps in docker logs show cadence).
+_WS_POLL_LOG = os.environ.get("YFINANCE_WS_POLL_LOG", "").strip().lower() in ("1", "true", "yes", "on")
 _ws_price_cache: dict[str, tuple[float, tuple]] = {}
 _ws_price_lock = threading.Lock()
 
@@ -169,6 +194,10 @@ def _last_price_sync(symbol: str):
     """
     Fast path for live-ish quotes. Avoids yf.download(50 tickers, 1m) every few seconds,
     which is too slow for the Trading Agents UI (Hostinger VPS).
+
+    Each call respects WS_PRICE_CACHE_TTL_SEC. On a cache miss, uses `_throttle_yahoo_call`
+    before `fast_info`, and again before `history` if no usable price—so two Yahoo calls
+    are spaced by at least YAHOO_MIN_INTERVAL_SEC each time.
     """
     sym = symbol.strip().upper()
     now = time.time()
@@ -251,6 +280,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     if updates:
                         if not await _safe_send_json(websocket, {"type": "update", "data": updates}):
                             return
+
+                    if _WS_POLL_LOG:
+                        log.info(
+                            "ws poll cycle tickers=%d priced=%d sent_update=%s next_sleep_s=%.1f",
+                            len(clean_tickers),
+                            len(updates),
+                            bool(updates),
+                            WS_POLL_INTERVAL_SEC,
+                        )
 
                     await asyncio.sleep(WS_POLL_INTERVAL_SEC)
                 except WebSocketDisconnect:
