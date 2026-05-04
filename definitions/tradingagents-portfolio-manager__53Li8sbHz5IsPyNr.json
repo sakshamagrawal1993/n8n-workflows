@@ -1,5 +1,10 @@
 {
-  "name": "TradingAgents - Research Manager",
+  "updatedAt": "2026-05-04T03:19:22.316Z",
+  "createdAt": "2026-05-02T06:46:04.208Z",
+  "id": "53Li8sbHz5IsPyNr",
+  "name": "TradingAgents - Portfolio Manager",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -15,14 +20,14 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Ticker: {{$json.ticker}}\nDate: {{$json.date}}\n\nMarket report:\n{{$json.market_report}}\n\nNews report:\n{{$json.news_report}}\n\nFundamentals report:\n{{$json.fundamentals_report}}\n\nSocial report:\n{{$json.social_report}}\n\nBull case:\n{{$json.bull_report}}\n\nBear case:\n{{$json.bear_report}}",
+        "text": "={{ ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nResearch Manager briefing:\\n' + $json.manager_report + '\\n\\nBull case:\\n' + $json.bull_report + '\\n\\nBear case:\\n' + $json.bear_report + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a Research Manager. Synthesize all analyst, social, bull, and bear reports into one balanced briefing for the Portfolio Manager, keeping a strict 24-hour trading horizon in mind."
+          "systemMessage": "You are the Portfolio Manager. Make the final BUY, SELL, or HOLD decision for a strict 24-hour trading horizon based on all research. You MUST output your final decision in strict JSON format: {\"decision\": \"BUY|SELL|HOLD\", \"confidence\": \"High|Medium|Low\", \"thesis\": \"Your detailed explanation here...\"}"
         }
       },
       "id": "agent-node",
-      "name": "Research Manager",
+      "name": "Portfolio Manager",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
@@ -75,7 +80,7 @@
       "main": [
         [
           {
-            "node": "Research Manager",
+            "node": "Portfolio Manager",
             "type": "main",
             "index": 0
           }
@@ -86,7 +91,7 @@
       "ai_languageModel": [
         [
           {
-            "node": "Research Manager",
+            "node": "Portfolio Manager",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -97,7 +102,7 @@
       "ai_tool": [
         [
           {
-            "node": "Research Manager",
+            "node": "Portfolio Manager",
             "type": "ai_tool",
             "index": 0
           }
@@ -105,9 +110,28 @@
       ]
     }
   },
-  "active": true,
   "settings": {},
-  "id": "DXp8YLaipORggHwr",
-  "updatedAt": "2026-05-02T11:14:40.333Z",
-  "createdAt": "2026-05-02T06:46:02.854Z"
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "b5eba95f-e567-4b77-96df-1a0e2bc45f0a",
+  "activeVersionId": "b5eba95f-e567-4b77-96df-1a0e2bc45f0a",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:04.208Z",
+      "createdAt": "2026-05-02T06:46:04.208Z",
+      "role": "workflow:owner",
+      "workflowId": "53Li8sbHz5IsPyNr",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

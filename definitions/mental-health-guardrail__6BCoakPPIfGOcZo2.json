@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-11T10:15:03.223Z",
+  "updatedAt": "2026-05-04T03:19:24.659Z",
   "createdAt": "2026-04-11T10:11:25.519Z",
   "id": "6BCoakPPIfGOcZo2",
   "name": "Mental Health Guardrail",
@@ -113,8 +113,7 @@
     }
   },
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
+    "executionOrder": "v1"
   },
   "staticData": null,
   "meta": {
@@ -133,6 +132,5 @@
       "projectId": "ndLqkF3n8R5kDVa5"
     }
   ],
-  "activeVersion": null,
   "tags": []
 }

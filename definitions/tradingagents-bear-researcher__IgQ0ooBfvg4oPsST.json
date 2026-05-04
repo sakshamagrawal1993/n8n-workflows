@@ -1,0 +1,144 @@
+{
+  "updatedAt": "2026-05-04T03:19:23.805Z",
+  "createdAt": "2026-05-02T06:46:02.639Z",
+  "id": "IgQ0ooBfvg4oPsST",
+  "name": "TradingAgents - Bear Researcher",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "execute-workflow-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
+        "hasOutputParser": false,
+        "options": {
+          "systemMessage": "You are a Bear Researcher. Construct the strongest possible bearish argument against holding the asset over the next 24 hours."
+        }
+      },
+      "id": "agent-node",
+      "name": "Bear Researcher",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "llm-node",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        500,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "F8K5WXRWzmnY0vcZ",
+          "name": "Saksham OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://eodhd.com/api/news?s={{$json.ticker}}",
+        "sendHeaders": false,
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpQueryAuth"
+      },
+      "id": "tool-node",
+      "name": "Bearish Context Tool (EODHD)",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        500
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "jNeJqu0SLOpdQKgH",
+          "name": "EODHD Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Bear Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Bear Researcher",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bearish Context Tool (EODHD)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Bear Researcher",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "ad279d5b-4c57-4d49-81c1-f169dd5213ee",
+  "activeVersionId": "ad279d5b-4c57-4d49-81c1-f169dd5213ee",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:02.639Z",
+      "createdAt": "2026-05-02T06:46:02.639Z",
+      "role": "workflow:owner",
+      "workflowId": "IgQ0ooBfvg4oPsST",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
+}

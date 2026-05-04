@@ -1,5 +1,10 @@
 {
+  "updatedAt": "2026-05-04T03:19:22.795Z",
+  "createdAt": "2026-04-18T13:20:50.430Z",
+  "id": "ibTh0cmjuUzfiiNK",
   "name": "Medical Diagnosis Benchmark",
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -86,11 +91,27 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "id": "ibTh0cmjuUzfiiNK",
-  "active": false,
-  "updatedAt": "2026-05-02T11:14:41.640Z",
-  "createdAt": "2026-04-18T13:20:50.430Z"
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "7dd8e9dc-f580-4895-a695-428d82361a2d",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-18T13:20:50.430Z",
+      "createdAt": "2026-04-18T13:20:50.430Z",
+      "role": "workflow:owner",
+      "workflowId": "ibTh0cmjuUzfiiNK",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

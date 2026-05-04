@@ -20,7 +20,11 @@ if [[ "$MODE" == "apply-force" ]]; then
 fi
 
 if [[ "$MODE" == "apply" ]]; then
-  "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply "${FORCE[@]}" -d "$ROOT_DIR/definitions"
+  if ((${#FORCE[@]} > 0)); then
+    "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply "${FORCE[@]}" -d "$ROOT_DIR/definitions"
+  else
+    "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply -d "$ROOT_DIR/definitions"
+  fi
   echo "Apply completed."
 else
   "$ROOT_DIR/tools/n8n-cli/n8n-cli" apply --dry-run -d "$ROOT_DIR/definitions"

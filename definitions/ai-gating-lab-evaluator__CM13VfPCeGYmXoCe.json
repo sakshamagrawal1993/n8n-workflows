@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-02T11:14:41.414Z",
+  "updatedAt": "2026-05-04T03:19:25.901Z",
   "createdAt": "2026-05-02T11:14:41.414Z",
   "id": "CM13VfPCeGYmXoCe",
   "name": "AI Gating Lab Evaluator",
@@ -202,14 +202,26 @@
     "executionOrder": "v1"
   },
   "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "pinData": {},
-  "versionId": "7b7d5f22-5018-40fd-aa75-bfd5c9c6e4fc",
+  "meta": null,
+  "pinData": null,
+  "versionId": "96530c2d-31ef-4ec7-a6a5-b7c496eb9c49",
   "activeVersionId": null,
   "triggerCount": 0,
-  "shared": [],
-  "activeVersion": null,
-  "tags": []
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T11:14:41.414Z",
+      "createdAt": "2026-05-02T11:14:41.414Z",
+      "role": "workflow:owner",
+      "workflowId": "CM13VfPCeGYmXoCe",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

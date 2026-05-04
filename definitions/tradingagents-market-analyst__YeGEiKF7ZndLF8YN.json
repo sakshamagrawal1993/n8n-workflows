@@ -1,5 +1,10 @@
 {
+  "updatedAt": "2026-05-04T03:19:26.242Z",
+  "createdAt": "2026-05-02T06:46:04.494Z",
+  "id": "YeGEiKF7ZndLF8YN",
   "name": "TradingAgents - Market Analyst",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -8,15 +13,14 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        200,
-        300
+        208,
+        304
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
-        "hasOutputParser": false,
+        "text": "={{ $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "options": {
           "systemMessage": "You are a Market Analyst. Review technical indicators and provide a technical rating for a short-term 24-hour hold."
         }
@@ -26,8 +30,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
-        500,
-        300
+        512,
+        304
       ]
     },
     {
@@ -42,8 +46,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1,
       "position": [
-        500,
-        500
+        480,
+        528
       ],
       "credentials": {
         "openAiApi": {
@@ -54,10 +58,7 @@
     },
     {
       "parameters": {
-        "method": "GET",
         "url": "https://api.tiingo.com/tiingo/daily/{{$json.ticker}}/prices",
-        "sendHeaders": false,
-        "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "httpHeaderAuth"
       },
@@ -66,8 +67,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
       "typeVersion": 1.1,
       "position": [
-        700,
-        500
+        656,
+        528
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -112,9 +113,30 @@
       ]
     }
   },
-  "active": true,
-  "settings": {},
-  "id": "YeGEiKF7ZndLF8YN",
-  "updatedAt": "2026-05-02T11:14:42.003Z",
-  "createdAt": "2026-05-02T06:46:04.494Z"
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "5ef17112-8baa-4a46-851f-79a9c4764340",
+  "activeVersionId": "6648699b-ee89-403f-8e0c-38808ad4fb9c",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:04.494Z",
+      "createdAt": "2026-05-02T06:46:04.494Z",
+      "role": "workflow:owner",
+      "workflowId": "YeGEiKF7ZndLF8YN",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

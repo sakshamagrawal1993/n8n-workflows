@@ -1,5 +1,10 @@
 {
-  "name": "TradingAgents - News Analyst",
+  "updatedAt": "2026-05-04T03:19:22.912Z",
+  "createdAt": "2026-05-02T06:46:04.691Z",
+  "id": "bREGC66gC2ppRSio",
+  "name": "TradingAgents - Social Media Analyst",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -15,14 +20,14 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
+        "text": "={{ $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a News Analyst. Fetch the latest news and assess market sentiment, focusing on catalysts likely to impact the stock over the next 24 hours."
+          "systemMessage": "You are a Social Media Analyst. Review social sentiment and return a mood summary, emphasizing short-term hype or panic for a 24-hour trade."
         }
       },
       "id": "agent-node",
-      "name": "News Analyst",
+      "name": "Social Media Analyst",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
@@ -55,14 +60,14 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://data.alpaca.markets/v1beta1/news?symbols={{$json.ticker}}",
+        "url": "https://lunarcrush.com/api/4/public/coins/{{$json.ticker}}/meta",
         "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpCustomAuth"
+        "nodeCredentialType": "httpHeaderAuth"
       },
       "id": "tool-node",
-      "name": "Get News Tool (Alpaca)",
+      "name": "Social Sentiment Tool (LunarCrush)",
       "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
       "typeVersion": 1.1,
       "position": [
@@ -70,9 +75,9 @@
         500
       ],
       "credentials": {
-        "httpCustomAuth": {
-          "id": "Fn81k84jOum8RfUU",
-          "name": "Alpaca Key"
+        "httpHeaderAuth": {
+          "id": "p9h7gEqpN0UA9E32",
+          "name": "LunarCrush Key"
         }
       }
     }
@@ -82,7 +87,7 @@
       "main": [
         [
           {
-            "node": "News Analyst",
+            "node": "Social Media Analyst",
             "type": "main",
             "index": 0
           }
@@ -93,18 +98,18 @@
       "ai_languageModel": [
         [
           {
-            "node": "News Analyst",
+            "node": "Social Media Analyst",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Get News Tool (Alpaca)": {
+    "Social Sentiment Tool (LunarCrush)": {
       "ai_tool": [
         [
           {
-            "node": "News Analyst",
+            "node": "Social Media Analyst",
             "type": "ai_tool",
             "index": 0
           }
@@ -112,9 +117,28 @@
       ]
     }
   },
-  "active": true,
   "settings": {},
-  "id": "TIJbwjW9wXs7Nz0f",
-  "updatedAt": "2026-05-02T11:14:41.224Z",
-  "createdAt": "2026-05-02T06:46:03.780Z"
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "c46615f2-b310-402f-b204-15a703b5c98c",
+  "activeVersionId": "c46615f2-b310-402f-b204-15a703b5c98c",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:04.691Z",
+      "createdAt": "2026-05-02T06:46:04.691Z",
+      "role": "workflow:owner",
+      "workflowId": "bREGC66gC2ppRSio",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

@@ -1,5 +1,10 @@
 {
+  "updatedAt": "2026-05-04T03:19:23.971Z",
+  "createdAt": "2026-05-01T16:31:02.684Z",
+  "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -13,20 +18,22 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        200,
-        300
+        64,
+        80
       ],
       "webhookId": "trading-agents-run"
     },
     {
       "parameters": {
         "workflowId": "YeGEiKF7ZndLF8YN",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker || $json.ticker}}",
-            "date": "={{$json.body.date || $json.date}}",
-            "session_id": "={{$json.body.session_id || $json.session_id}}"
+            "ticker": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.ticker !== undefined ? $('Webhook (Trigger)').first().json.body.ticker : $('Webhook (Trigger)').first().json.ticker }}",
+            "date": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.date !== undefined ? $('Webhook (Trigger)').first().json.body.date : $('Webhook (Trigger)').first().json.date }}",
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.session_id !== undefined ? $('Webhook (Trigger)').first().json.body.session_id : $('Webhook (Trigger)').first().json.session_id }}",
+            "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}"
           }
         }
       },
@@ -35,19 +42,21 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        500,
-        0
+        336,
+        -208
       ]
     },
     {
       "parameters": {
         "workflowId": "TIJbwjW9wXs7Nz0f",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker || $json.ticker}}",
-            "date": "={{$json.body.date || $json.date}}",
-            "session_id": "={{$json.body.session_id || $json.session_id}}"
+            "ticker": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.ticker !== undefined ? $('Webhook (Trigger)').first().json.body.ticker : $('Webhook (Trigger)').first().json.ticker }}",
+            "date": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.date !== undefined ? $('Webhook (Trigger)').first().json.body.date : $('Webhook (Trigger)').first().json.date }}",
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.session_id !== undefined ? $('Webhook (Trigger)').first().json.body.session_id : $('Webhook (Trigger)').first().json.session_id }}",
+            "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}"
           }
         }
       },
@@ -56,19 +65,21 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        500,
-        180
+        336,
+        64
       ]
     },
     {
       "parameters": {
         "workflowId": "qXgHkMpiqmOJqDqv",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker || $json.ticker}}",
-            "date": "={{$json.body.date || $json.date}}",
-            "session_id": "={{$json.body.session_id || $json.session_id}}"
+            "ticker": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.ticker !== undefined ? $('Webhook (Trigger)').first().json.body.ticker : $('Webhook (Trigger)').first().json.ticker }}",
+            "date": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.date !== undefined ? $('Webhook (Trigger)').first().json.body.date : $('Webhook (Trigger)').first().json.date }}",
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.session_id !== undefined ? $('Webhook (Trigger)').first().json.body.session_id : $('Webhook (Trigger)').first().json.session_id }}",
+            "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}"
           }
         }
       },
@@ -77,19 +88,21 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        500,
-        360
+        288,
+        320
       ]
     },
     {
       "parameters": {
         "workflowId": "bREGC66gC2ppRSio",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.body.ticker || $json.ticker}}",
-            "date": "={{$json.body.date || $json.date}}",
-            "session_id": "={{$json.body.session_id || $json.session_id}}"
+            "ticker": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.ticker !== undefined ? $('Webhook (Trigger)').first().json.body.ticker : $('Webhook (Trigger)').first().json.ticker }}",
+            "date": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.date !== undefined ? $('Webhook (Trigger)').first().json.body.date : $('Webhook (Trigger)').first().json.date }}",
+            "session_id": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.session_id !== undefined ? $('Webhook (Trigger)').first().json.body.session_id : $('Webhook (Trigger)').first().json.session_id }}",
+            "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}"
           }
         }
       },
@@ -98,8 +111,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        500,
-        540
+        288,
+        560
       ]
     },
     {
@@ -113,8 +126,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        760,
-        90
+        768,
+        96
       ]
     },
     {
@@ -128,8 +141,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        760,
-        450
+        768,
+        464
       ]
     },
     {
@@ -143,13 +156,13 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        980,
-        270
+        992,
+        272
       ]
     },
     {
       "parameters": {
-        "jsCode": "const root = $('Webhook (Trigger)').first().json.body || $('Webhook (Trigger)').first().json;\nconst read = (nodeName) => {\n  try {\n    const data = $node[nodeName].json;\n    return data.output || data.text || data.content || JSON.stringify(data);\n  } catch (error) {\n    return `No output from ${nodeName}`;\n  }\n};\nreturn [{ json: {\n  ticker: root.ticker,\n  date: root.date,\n  session_id: root.session_id,\n  market_report: read('Call Market Analyst Sub-workflow'),\n  news_report: read('Call News Analyst Sub-workflow'),\n  fundamentals_report: read('Call Fundamentals Analyst Sub-workflow'),\n  social_report: read('Call Social Analyst Sub-workflow')\n}}];"
+        "jsCode": "const root = $('Webhook (Trigger)').first().json.body || $('Webhook (Trigger)').first().json;\nconst read = (nodeName) => {\n  try {\n    const data = $node[nodeName].json;\n    return data.output || data.text || data.content || JSON.stringify(data);\n  } catch (error) {\n    return `No output from ${nodeName}`;\n  }\n};\nreturn [{ json: {\n  ticker: root.ticker,\n  date: root.date,\n  session_id: root.session_id,\n  execution_price: root.execution_price !== undefined && root.execution_price !== null ? root.execution_price : null,\n  market_report: read('Call Market Analyst Sub-workflow'),\n  news_report: read('Call News Analyst Sub-workflow'),\n  fundamentals_report: read('Call Fundamentals Analyst Sub-workflow'),\n  social_report: read('Call Social Analyst Sub-workflow')\n}}];"
       },
       "id": "prepare-analyst-context",
       "name": "Prepare Analyst Context",
@@ -157,22 +170,24 @@
       "typeVersion": 2,
       "position": [
         1200,
-        270
+        272
       ]
     },
     {
       "parameters": {
         "workflowId": "AUTiS5Q4Eh5r2KXQ",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.ticker}}",
-            "date": "={{$json.date}}",
-            "session_id": "={{$json.session_id}}",
-            "market_report": "={{$json.market_report}}",
-            "news_report": "={{$json.news_report}}",
-            "fundamentals_report": "={{$json.fundamentals_report}}",
-            "social_report": "={{$json.social_report}}"
+            "ticker": "={{ $json.ticker }}",
+            "date": "={{ $json.date }}",
+            "session_id": "={{ $json.session_id }}",
+            "execution_price": "={{ $json.execution_price }}",
+            "market_report": "={{ $json.market_report }}",
+            "news_report": "={{ $json.news_report }}",
+            "fundamentals_report": "={{ $json.fundamentals_report }}",
+            "social_report": "={{ $json.social_report }}"
           }
         }
       },
@@ -181,23 +196,25 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        1460,
-        180
+        1472,
+        -96
       ]
     },
     {
       "parameters": {
         "workflowId": "IgQ0ooBfvg4oPsST",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.ticker}}",
-            "date": "={{$json.date}}",
-            "session_id": "={{$json.session_id}}",
-            "market_report": "={{$json.market_report}}",
-            "news_report": "={{$json.news_report}}",
-            "fundamentals_report": "={{$json.fundamentals_report}}",
-            "social_report": "={{$json.social_report}}"
+            "ticker": "={{ $json.ticker }}",
+            "date": "={{ $json.date }}",
+            "session_id": "={{ $json.session_id }}",
+            "execution_price": "={{ $json.execution_price }}",
+            "market_report": "={{ $json.market_report }}",
+            "news_report": "={{ $json.news_report }}",
+            "fundamentals_report": "={{ $json.fundamentals_report }}",
+            "social_report": "={{ $json.social_report }}"
           }
         }
       },
@@ -206,8 +223,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        1460,
-        360
+        1456,
+        576
       ]
     },
     {
@@ -221,8 +238,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        1640,
-        270
+        1792,
+        272
       ]
     },
     {
@@ -234,25 +251,27 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1840,
-        270
+        1936,
+        272
       ]
     },
     {
       "parameters": {
         "workflowId": "DXp8YLaipORggHwr",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.ticker}}",
-            "date": "={{$json.date}}",
-            "session_id": "={{$json.session_id}}",
-            "market_report": "={{$json.market_report}}",
-            "news_report": "={{$json.news_report}}",
-            "fundamentals_report": "={{$json.fundamentals_report}}",
-            "social_report": "={{$json.social_report}}",
-            "bull_report": "={{$json.bull_report}}",
-            "bear_report": "={{$json.bear_report}}"
+            "ticker": "={{ $json.ticker }}",
+            "date": "={{ $json.date }}",
+            "session_id": "={{ $json.session_id }}",
+            "execution_price": "={{ $json.execution_price }}",
+            "market_report": "={{ $json.market_report }}",
+            "news_report": "={{ $json.news_report }}",
+            "fundamentals_report": "={{ $json.fundamentals_report }}",
+            "social_report": "={{ $json.social_report }}",
+            "bull_report": "={{ $json.bull_report }}",
+            "bear_report": "={{ $json.bear_report }}"
           }
         }
       },
@@ -261,8 +280,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        2100,
-        270
+        2112,
+        272
       ]
     },
     {
@@ -274,26 +293,28 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2340,
-        270
+        2352,
+        272
       ]
     },
     {
       "parameters": {
         "workflowId": "53Li8sbHz5IsPyNr",
+        "options": {},
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "ticker": "={{$json.ticker}}",
-            "date": "={{$json.date}}",
-            "session_id": "={{$json.session_id}}",
-            "manager_report": "={{$json.manager_report}}",
-            "bull_report": "={{$json.bull_report}}",
-            "bear_report": "={{$json.bear_report}}",
-            "market_report": "={{$json.market_report}}",
-            "news_report": "={{$json.news_report}}",
-            "fundamentals_report": "={{$json.fundamentals_report}}",
-            "social_report": "={{$json.social_report}}"
+            "ticker": "={{ $json.ticker }}",
+            "date": "={{ $json.date }}",
+            "session_id": "={{ $json.session_id }}",
+            "execution_price": "={{ $json.execution_price }}",
+            "manager_report": "={{ $json.manager_report }}",
+            "bull_report": "={{ $json.bull_report }}",
+            "bear_report": "={{ $json.bear_report }}",
+            "market_report": "={{ $json.market_report }}",
+            "news_report": "={{ $json.news_report }}",
+            "fundamentals_report": "={{ $json.fundamentals_report }}",
+            "social_report": "={{ $json.social_report }}"
           }
         }
       },
@@ -302,8 +323,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        2580,
-        270
+        2592,
+        272
       ]
     },
     {
@@ -315,8 +336,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2820,
-        270
+        2832,
+        272
       ]
     },
     {
@@ -325,7 +346,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Market Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -338,16 +358,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        720,
-        -120
+        480,
+        -304
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -355,7 +375,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'News Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -368,16 +387,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        720,
-        60
+        464,
+        -32
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -385,7 +404,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Fundamentals Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -398,16 +416,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        720,
-        240
+        432,
+        432
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -415,7 +433,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Social Media Analyst', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -428,16 +445,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        720,
-        420
+        432,
+        624
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -445,7 +462,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Bull Researcher', log_type: 'debate', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -458,16 +474,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        1680,
-        80
+        1632,
+        -240
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -475,7 +491,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Bear Researcher', log_type: 'debate', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -488,16 +503,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        1680,
-        460
+        1664,
+        640
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -505,7 +520,6 @@
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpCustomAuth",
-        "sendHeaders": false,
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id, agent_role: 'Research Manager', log_type: 'research', content: String($json.output || $json.text || $json.content || JSON.stringify($json)).slice(0, 100000) }) }}",
@@ -518,16 +532,16 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        2280,
+        2288,
         80
       ],
-      "continueOnFail": true,
       "credentials": {
         "httpCustomAuth": {
           "id": "TaSupPrxyFn26ab2",
           "name": "Supabase trading-agents-proxy"
         }
-      }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -763,9 +777,30 @@
       ]
     }
   },
-  "active": true,
-  "settings": {},
-  "id": "UDRkHgYzqs3GBaat",
-  "updatedAt": "2026-05-02T11:14:42.289Z",
-  "createdAt": "2026-05-01T16:31:02.684Z"
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "eece35b0-43ce-49f2-b99d-e13f88b077eb",
+  "activeVersionId": "eece35b0-43ce-49f2-b99d-e13f88b077eb",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-01T16:31:02.684Z",
+      "createdAt": "2026-05-01T16:31:02.684Z",
+      "role": "workflow:owner",
+      "workflowId": "UDRkHgYzqs3GBaat",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-11T10:10:04.025Z",
+  "updatedAt": "2026-05-04T03:19:25.101Z",
   "createdAt": "2026-04-11T10:09:55.999Z",
   "id": "uyz4iQ7mbDb1b9Z6",
   "name": "Image Analysis",
@@ -24,8 +24,7 @@
   ],
   "connections": {},
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
+    "executionOrder": "v1"
   },
   "staticData": null,
   "meta": null,
@@ -42,6 +41,5 @@
       "projectId": "ndLqkF3n8R5kDVa5"
     }
   ],
-  "activeVersion": null,
   "tags": []
 }

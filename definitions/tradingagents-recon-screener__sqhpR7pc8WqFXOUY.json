@@ -1,5 +1,10 @@
 {
+  "updatedAt": "2026-05-04T03:19:24.254Z",
+  "createdAt": "2026-05-02T06:46:04.992Z",
+  "id": "sqhpR7pc8WqFXOUY",
   "name": "TradingAgents - Recon Screener",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -142,9 +147,28 @@
       ]
     }
   },
-  "active": true,
   "settings": {},
-  "id": "sqhpR7pc8WqFXOUY",
-  "updatedAt": "2026-05-02T11:14:42.437Z",
-  "createdAt": "2026-05-02T06:46:04.992Z"
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "5f1bf697-a798-453f-8ad4-8d82acaee1f4",
+  "activeVersionId": "5f1bf697-a798-453f-8ad4-8d82acaee1f4",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:04.992Z",
+      "createdAt": "2026-05-02T06:46:04.992Z",
+      "role": "workflow:owner",
+      "workflowId": "sqhpR7pc8WqFXOUY",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

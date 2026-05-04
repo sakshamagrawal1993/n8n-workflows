@@ -1,5 +1,10 @@
 {
-  "name": "TradingAgents - Social Media Analyst",
+  "updatedAt": "2026-05-04T03:19:22.513Z",
+  "createdAt": "2026-05-02T06:46:04.350Z",
+  "id": "AUTiS5Q4Eh5r2KXQ",
+  "name": "TradingAgents - Bull Researcher",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -15,14 +20,14 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{$json.ticker}} on {{$json.date}}",
+        "text": "={{ ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? 'Reference price at run (from app): ' + String($json.execution_price) + '\\n\\n' : '') + 'Ticker: ' + $json.ticker + '\\nDate: ' + $json.date + '\\n\\nMarket report:\\n' + $json.market_report + '\\n\\nNews report:\\n' + $json.news_report + '\\n\\nFundamentals report:\\n' + $json.fundamentals_report + '\\n\\nSocial report:\\n' + $json.social_report }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a Social Media Analyst. Review social sentiment and return a mood summary, emphasizing short-term hype or panic for a 24-hour trade."
+          "systemMessage": "You are a Bull Researcher. Construct the strongest possible bullish argument for holding the asset over the next 24 hours."
         }
       },
       "id": "agent-node",
-      "name": "Social Media Analyst",
+      "name": "Bull Researcher",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
@@ -55,14 +60,14 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://lunarcrush.com/api/4/public/coins/{{$json.ticker}}/meta",
+        "url": "https://newsapi.org/v2/everything?q={{$json.ticker}}&sortBy=relevancy",
         "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "httpHeaderAuth"
       },
       "id": "tool-node",
-      "name": "Social Sentiment Tool (LunarCrush)",
+      "name": "Bullish Context Tool (NewsAPI)",
       "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
       "typeVersion": 1.1,
       "position": [
@@ -71,8 +76,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "p9h7gEqpN0UA9E32",
-          "name": "LunarCrush Key"
+          "id": "jFJNE26xGZnWlJNQ",
+          "name": "NewsAPI Key"
         }
       }
     }
@@ -82,7 +87,7 @@
       "main": [
         [
           {
-            "node": "Social Media Analyst",
+            "node": "Bull Researcher",
             "type": "main",
             "index": 0
           }
@@ -93,18 +98,18 @@
       "ai_languageModel": [
         [
           {
-            "node": "Social Media Analyst",
+            "node": "Bull Researcher",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Social Sentiment Tool (LunarCrush)": {
+    "Bullish Context Tool (NewsAPI)": {
       "ai_tool": [
         [
           {
-            "node": "Social Media Analyst",
+            "node": "Bull Researcher",
             "type": "ai_tool",
             "index": 0
           }
@@ -112,9 +117,28 @@
       ]
     }
   },
-  "active": true,
   "settings": {},
-  "id": "bREGC66gC2ppRSio",
-  "updatedAt": "2026-05-02T11:14:42.142Z",
-  "createdAt": "2026-05-02T06:46:04.691Z"
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "55858cd8-c75c-463a-bd70-ad6dd435d660",
+  "activeVersionId": "55858cd8-c75c-463a-bd70-ad6dd435d660",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:04.350Z",
+      "createdAt": "2026-05-02T06:46:04.350Z",
+      "role": "workflow:owner",
+      "workflowId": "AUTiS5Q4Eh5r2KXQ",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }

@@ -1,5 +1,10 @@
 {
-  "name": "TradingAgents - Bear Researcher",
+  "updatedAt": "2026-05-04T03:19:25.710Z",
+  "createdAt": "2026-05-02T06:46:05.746Z",
+  "id": "qXgHkMpiqmOJqDqv",
+  "name": "TradingAgents - Fundamentals Analyst",
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -15,14 +20,14 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Ticker: {{$json.ticker}}\nDate: {{$json.date}}\n\nMarket report:\n{{$json.market_report}}\n\nNews report:\n{{$json.news_report}}\n\nFundamentals report:\n{{$json.fundamentals_report}}\n\nSocial report:\n{{$json.social_report}}",
+        "text": "={{ $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a Bear Researcher. Construct the strongest possible bearish argument against holding the asset over the next 24 hours."
+          "systemMessage": "You are a Fundamentals Analyst. Fetch financial statements and evaluate company health, focusing on metrics that might cause significant price movement within the next 24 hours."
         }
       },
       "id": "agent-node",
-      "name": "Bear Researcher",
+      "name": "Fundamentals Analyst",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
@@ -55,26 +60,19 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://eodhd.com/api/news?s={{$json.ticker}}",
+        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
         "sendHeaders": false,
         "options": {},
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpQueryAuth"
+        "authentication": "none"
       },
       "id": "tool-node",
-      "name": "Bearish Context Tool (EODHD)",
+      "name": "Yahoo Deep Research Tool",
       "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
       "typeVersion": 1.1,
       "position": [
         700,
         500
-      ],
-      "credentials": {
-        "httpQueryAuth": {
-          "id": "jNeJqu0SLOpdQKgH",
-          "name": "EODHD Key"
-        }
-      }
+      ]
     }
   ],
   "connections": {
@@ -82,7 +80,7 @@
       "main": [
         [
           {
-            "node": "Bear Researcher",
+            "node": "Fundamentals Analyst",
             "type": "main",
             "index": 0
           }
@@ -93,18 +91,18 @@
       "ai_languageModel": [
         [
           {
-            "node": "Bear Researcher",
+            "node": "Fundamentals Analyst",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Bearish Context Tool (EODHD)": {
+    "Yahoo Deep Research Tool": {
       "ai_tool": [
         [
           {
-            "node": "Bear Researcher",
+            "node": "Fundamentals Analyst",
             "type": "ai_tool",
             "index": 0
           }
@@ -112,9 +110,28 @@
       ]
     }
   },
-  "active": true,
   "settings": {},
-  "id": "IgQ0ooBfvg4oPsST",
-  "updatedAt": "2026-05-02T11:14:40.158Z",
-  "createdAt": "2026-05-02T06:46:02.639Z"
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "c0aef082-6e74-430f-bf84-7c6c5b144ade",
+  "activeVersionId": "c0aef082-6e74-430f-bf84-7c6c5b144ade",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T06:46:05.746Z",
+      "createdAt": "2026-05-02T06:46:05.746Z",
+      "role": "workflow:owner",
+      "workflowId": "qXgHkMpiqmOJqDqv",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-28T11:05:29.546Z",
+      "createdAt": "2026-03-28T11:05:29.546Z",
+      "id": "IAZacqMxcf5i505L",
+      "name": "managed-as-code"
+    }
+  ]
 }
