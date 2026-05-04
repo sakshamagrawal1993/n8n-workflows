@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T10:22:06.270Z",
+  "updatedAt": "2026-05-04T10:52:30.745Z",
   "createdAt": "2026-05-02T06:46:05.746Z",
   "id": "qXgHkMpiqmOJqDqv",
   "name": "TradingAgents - Fundamentals Analyst",
@@ -76,25 +76,31 @@
     },
     {
       "parameters": {
-        "method": "POST",
+        "method": "GET",
         "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
         "authentication": "none",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "action",
+              "value": "deep_research"
+            },
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            }
+          ]
+        },
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
             {
               "name": "apikey",
               "value": "sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP"
             }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\"action\":\"deep_research\",\"ticker\":\"{{$json.ticker}}\"}",
         "options": {}
       },
       "id": "tool-supabase-deep-research",
