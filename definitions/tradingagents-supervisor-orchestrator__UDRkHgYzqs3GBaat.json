@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T12:07:24.305Z",
+  "updatedAt": "2026-05-04T12:10:40.827Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -703,46 +703,24 @@
     },
     {
       "parameters": {
-        "method": "PATCH",
-        "url": "={{ 'https://ralhkmpbslsdkwnqzqen.supabase.co/rest/v1/trading_sessions?id=eq.' + $json.session_id }}",
-        "authentication": "none",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "Prefer",
-              "value": "return=minimal"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ status: 'completed', final_decision: $json.portfolio_decision.decision, executive_summary: ($json.portfolio_decision.thesis || '').slice(0, 2000), investment_thesis: ($json.portfolio_decision.thesis || '').slice(0, 2000), updated_at: new Date().toISOString() }) }}",
-        "options": {
-          "timeout": 10000
-        }
+        "operation": "executeQuery",
+        "query": "UPDATE trading_sessions SET status = 'completed', final_decision = '{{ $json.portfolio_decision.decision }}', updated_at = NOW() WHERE id = '{{ $json.session_id }}'",
+        "options": {}
       },
       "id": "update-session-complete",
       "name": "Update Session Complete",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
       "position": [
         2400,
         500
       ],
-      "credentials": {}
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      }
     },
     {
       "parameters": {
@@ -770,26 +748,6 @@
     "Webhook (Trigger)": {
       "main": [
         [
-          {
-            "node": "Call Technical Analyst Sub-workflow",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Call News Analyst Sub-workflow",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Call Fundamentals Analyst Sub-workflow",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Call Social Analyst Sub-workflow",
-            "type": "main",
-            "index": 0
-          },
           {
             "node": "Respond to Webhook (Early)",
             "type": "main",
@@ -1018,6 +976,32 @@
           },
           {
             "node": "Update Session Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Session Exists": {
+      "main": [
+        [
+          {
+            "node": "Call Technical Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call News Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Fundamentals Analyst Sub-workflow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Social Analyst Sub-workflow",
             "type": "main",
             "index": 0
           }
