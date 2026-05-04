@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T11:47:33.407Z",
+  "updatedAt": "2026-05-04T12:02:28.902Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -493,7 +493,7 @@
             "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
             "agent_role": "Social Media Analyst",
             "log_type": "research",
-            "content": "={{ String($(\"Call Social Analyst Sub-workflow\").first().json.output || $(\"Call Social Analyst Sub-workflow\").first().json.text || $(\"Call Social Analyst Sub-workflow\").first().json.content || '') }}"
+            "content": "={{ String($('Call Social Analyst Sub-workflow').first().json.output || $('Call Social Analyst Sub-workflow').first().json.text || '') }}"
           },
           "matchingColumns": [],
           "schema": []
@@ -577,7 +577,7 @@
             "session_id": "={{ $('Webhook (Trigger)').first().json.body.session_id || $('Webhook (Trigger)').first().json.session_id }}",
             "agent_role": "Bear Researcher",
             "log_type": "debate",
-            "content": "={{ String($(\"Call Bear Researcher Sub-workflow\").first().json.output || $(\"Call Bear Researcher Sub-workflow\").first().json.text || $(\"Call Bear Researcher Sub-workflow\").first().json.content || '') }}"
+            "content": "={{ String($('Call Bear Researcher Sub-workflow').first().json.output || $('Call Bear Researcher Sub-workflow').first().json.text || '') }}"
           },
           "matchingColumns": [],
           "schema": []
@@ -703,24 +703,17 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE trading_sessions SET status = 'completed', final_decision = '{{ $json.portfolio_decision.decision }}', executive_summary = '{{ $json.portfolio_decision.thesis }}', updated_at = NOW() WHERE id = '{{ $json.session_id }}'",
-        "options": {}
+        "jsCode": "\n// Update session status via Supabase REST API (avoids SQL injection from quotes in thesis)\nconst session_id = $json.session_id;\nconst decision = $json.portfolio_decision?.decision || 'HOLD';\nconst thesis = $json.portfolio_decision?.thesis || '';\nconst confidence = $json.portfolio_decision?.confidence || 'Medium';\n\nconst SUPABASE_URL = 'https://ralhkmpbslsdkwnqzqen.supabase.co';\nconst ANON_KEY = 'sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP';\n\nconst response = await fetch(\n  `${SUPABASE_URL}/rest/v1/trading_sessions?id=eq.${session_id}`,\n  {\n    method: 'PATCH',\n    headers: {\n      'apikey': ANON_KEY,\n      'Authorization': `Bearer ${ANON_KEY}`,\n      'Content-Type': 'application/json',\n      'Prefer': 'return=minimal'\n    },\n    body: JSON.stringify({\n      status: 'completed',\n      final_decision: decision,\n      executive_summary: thesis.slice(0, 2000),\n      investment_thesis: thesis.slice(0, 2000),\n      updated_at: new Date().toISOString()\n    })\n  }\n);\n\nreturn [{\n  json: {\n    session_id,\n    decision,\n    confidence,\n    status: response.ok ? 'updated' : 'failed',\n    httpStatus: response.status\n  }\n}];\n"
       },
       "id": "update-session-complete",
       "name": "Update Session Complete",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         2400,
         500
       ],
-      "credentials": {
-        "postgres": {
-          "id": "TzhNsURks708nQk6",
-          "name": "Postgres account"
-        }
-      }
+      "credentials": {}
     }
   ],
   "connections": {
@@ -810,11 +803,6 @@
             "node": "Merge Fundamentals And Social",
             "type": "main",
             "index": 1
-          },
-          {
-            "node": "Push Log — Social Media Analyst",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -837,6 +825,11 @@
             "node": "Merge Analyst Groups",
             "type": "main",
             "index": 1
+          },
+          {
+            "node": "Push Log — Social Media Analyst",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -891,11 +884,6 @@
             "node": "Merge Debate Reports",
             "type": "main",
             "index": 1
-          },
-          {
-            "node": "Push Log — Bear Researcher",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -905,6 +893,11 @@
         [
           {
             "node": "Prepare Debate Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Push Log — Bear Researcher",
             "type": "main",
             "index": 0
           }
