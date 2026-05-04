@@ -1,0 +1,51 @@
+{
+  "updatedAt": "2026-05-04T04:03:42.028Z",
+  "createdAt": "2026-05-04T04:03:26.529Z",
+  "id": "aVYdwgxZUwlvEAz1",
+  "name": "My workflow 3",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "heelo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "371bf513-0808-47ca-8184-3abe134f2bd4",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "11c6752c-a7b0-48d2-8117-4f6c17eded03",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-04T04:03:26.529Z",
+      "createdAt": "2026-05-04T04:03:26.529Z",
+      "role": "workflow:owner",
+      "workflowId": "aVYdwgxZUwlvEAz1",
+      "projectId": "ndLqkF3n8R5kDVa5"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

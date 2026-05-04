@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T08:38:55.289Z",
+  "updatedAt": "2026-05-04T10:22:05.532Z",
   "createdAt": "2026-05-02T06:46:03.780Z",
   "id": "TIJbwjW9wXs7Nz0f",
   "name": "TradingAgents - News Analyst",
@@ -23,7 +23,7 @@
         "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a News Analyst. Fetch the latest news and assess market sentiment, focusing on catalysts likely to impact the stock over the next 24 hours."
+          "systemMessage": "You are a News Analyst. Use the Finnhub Company News tool to fetch recent news for the given ticker. Analyze sentiment and identify catalysts likely to impact the stock over the next 24 hours.\n\nYour response MUST end with a line starting with NEWS_SIGNAL: followed by compact JSON.\nExample last line: NEWS_SIGNAL: {\"sentiment\":\"BULLISH\",\"catalyst\":\"Fed rate cut expected\",\"confidence\":\"High\",\"headline_count\":5}"
         }
       },
       "id": "agent-node",
@@ -60,14 +60,14 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://data.alpaca.markets/v1beta1/news?symbols={{$json.ticker}}",
+        "url": "https://finnhub.io/api/v1/company-news?symbol={{$json.ticker}}&from={{new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10)}}&to={{new Date().toISOString().slice(0,10)}}",
         "sendHeaders": false,
         "options": {},
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpCustomAuth"
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "id": "tool-node",
-      "name": "Get News Tool (Alpaca)",
+      "name": "Get News Tool (Finnhub)",
       "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
       "typeVersion": 1.1,
       "position": [
@@ -75,9 +75,9 @@
         500
       ],
       "credentials": {
-        "httpCustomAuth": {
-          "id": "Fn81k84jOum8RfUU",
-          "name": "Alpaca Key"
+        "httpHeaderAuth": {
+          "id": "SR4cEU6bDqoofw6I",
+          "name": "Finnhub API Key"
         }
       }
     }
@@ -105,7 +105,7 @@
         ]
       ]
     },
-    "Get News Tool (Alpaca)": {
+    "Get News Tool (Finnhub)": {
       "ai_tool": [
         [
           {

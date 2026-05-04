@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T08:38:53.399Z",
+  "updatedAt": "2026-05-04T10:22:03.594Z",
   "createdAt": "2026-05-02T06:46:04.691Z",
   "id": "bREGC66gC2ppRSio",
   "name": "TradingAgents - Social Media Analyst",
@@ -23,7 +23,7 @@
         "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "You are a Social Media Analyst. Review social sentiment and return a mood summary, emphasizing short-term hype or panic for a 24-hour trade."
+          "systemMessage": "You are a Social Media Analyst. For crypto assets, use the LunarCrush tool to get Galaxy Score and social volume. For US/Indian equities, the LunarCrush tool may not return data - in that case, use your knowledge of general market sentiment and any observable retail interest patterns for this ticker. Assess short-term social sentiment (bullish/bearish/neutral) for the next 24 hours.\n\nYour response MUST end with a line starting with SOCIAL_SIGNAL: followed by compact JSON.\nExample: SOCIAL_SIGNAL: {\"sentiment\":\"BULLISH\",\"hype_level\":\"HIGH\",\"confidence\":\"Medium\",\"data_source\":\"lunarcrush\"}"
         }
       },
       "id": "agent-node",

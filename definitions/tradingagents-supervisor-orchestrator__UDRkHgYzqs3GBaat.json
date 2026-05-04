@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T08:38:54.334Z",
+  "updatedAt": "2026-05-04T10:22:04.539Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -166,7 +166,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const w = $('Webhook (Trigger)').first().json;\nconst root = { ...w, ...(w.body && typeof w.body === 'object' ? w.body : {}) };\nconst read = (nodeName) => {\n  try {\n    const data = $node[nodeName].json;\n    return data.output || data.text || data.content || JSON.stringify(data);\n  } catch (error) {\n    return `No output from ${nodeName}`;\n  }\n};\nfunction inferMarketFromTicker(t) {\n  const u = String(t || '').trim().toUpperCase();\n  if (!u) return 'us';\n  if (u.endsWith('.NS') || u.endsWith('.BO')) return 'india';\n  const s = String(t || '').trim().toLowerCase().replace(/\\s+/g, '');\n  if (/^([a-z0-9]{2,10})[\\/-]?usdt$/i.test(s)) return 'crypto';\n  if (/^([a-z0-9]{2,10})[\\/-]?(usd|eur|gbp|jpy)$/i.test(s)) return 'crypto';\n  if (/^(btc|eth|sol|xrp|doge|ada|bnb|avax)$/i.test(s)) return 'crypto';\n  return 'us';\n}\nlet market = String(root.market ?? '').trim().toLowerCase();\nif (!market || (market !== 'us' && market !== 'india' && market !== 'crypto')) {\n  market = inferMarketFromTicker(root.ticker);\n}\nreturn [{ json: {\n  ticker: root.ticker,\n  date: root.date,\n  session_id: root.session_id,\n  execution_price: root.execution_price !== undefined && root.execution_price !== null ? root.execution_price : null,\n  market,\n  market_report: read('Call Technical Analyst Sub-workflow'),\n  news_report: read('Call News Analyst Sub-workflow'),\n  fundamentals_report: read('Call Fundamentals Analyst Sub-workflow'),\n  social_report: read('Call Social Analyst Sub-workflow')\n}}];"
+        "jsCode": "const w = $('Webhook (Trigger)').first().json;\nconst root = { ...w, ...(w.body && typeof w.body === 'object' ? w.body : {}) };\n\nfunction readNode(nodeName) {\n  try {\n    const d = $node[nodeName].json;\n    return d.output || d.text || d.content || JSON.stringify(d);\n  } catch (e) {\n    return `No output from ${nodeName}`;\n  }\n}\n\nfunction readSummary(nodeName, key) {\n  try {\n    const d = $node[nodeName].json;\n    // Check for structured summary field (from Format Technical Output node)\n    if (key === 'technical_summary' && d.technical_summary) return d.technical_summary;\n    // Parse from output text using SIGNAL label\n    const output = d.output || d.text || d.content || '';\n    const labelMap = {\n      'technical_summary': 'TECHNICAL_SUMMARY',\n      'news_signal': 'NEWS_SIGNAL',\n      'fundamentals_signal': 'FUNDAMENTALS_SIGNAL',\n      'social_signal': 'SOCIAL_SIGNAL'\n    };\n    const label = labelMap[key];\n    if (label) {\n      const lines = output.split('\\n');\n      for (const line of lines) {\n        if (line.trim().startsWith(label + ':')) {\n          try {\n            return JSON.parse(line.trim().replace(label + ':', '').trim());\n          } catch (_) {}\n        }\n      }\n    }\n    return null;\n  } catch (e) {\n    return null;\n  }\n}\n\nfunction inferMarketFromTicker(t) {\n  const u = String(t || '').trim().toUpperCase();\n  if (!u) return 'us';\n  if (u.endsWith('.NS') || u.endsWith('.BO')) return 'india';\n  const s = String(t || '').trim().toLowerCase().replace(/\\s+/g, '');\n  if (/^([a-z0-9]{2,10})[\\/-]?usdt$/i.test(s)) return 'crypto';\n  if (/^([a-z0-9]{2,10})[\\/-]?(usd|eur|gbp|jpy)$/i.test(s)) return 'crypto';\n  if (/^(btc|eth|sol|xrp|doge|ada|bnb|avax)$/i.test(s)) return 'crypto';\n  return 'us';\n}\n\nlet market = String(root.market ?? '').trim().toLowerCase();\nif (!market || (market !== 'us' && market !== 'india' && market !== 'crypto')) {\n  market = inferMarketFromTicker(root.ticker);\n}\n\nconst market_report = readNode('Call Technical Analyst Sub-workflow');\nconst news_report = readNode('Call News Analyst Sub-workflow');\nconst fundamentals_report = readNode('Call Fundamentals Analyst Sub-workflow');\nconst social_report = readNode('Call Social Analyst Sub-workflow');\n\nconst technical_summary = readSummary('Call Technical Analyst Sub-workflow', 'technical_summary');\nconst news_signal = readSummary('Call News Analyst Sub-workflow', 'news_signal');\nconst fundamentals_signal = readSummary('Call Fundamentals Analyst Sub-workflow', 'fundamentals_signal');\nconst social_signal = readSummary('Call Social Analyst Sub-workflow', 'social_signal');\n\nreturn [{ json: {\n  ticker: root.ticker,\n  date: root.date,\n  session_id: root.session_id,\n  execution_price: root.execution_price !== undefined && root.execution_price !== null ? root.execution_price : null,\n  market,\n  market_report,\n  news_report,\n  fundamentals_report,\n  social_report,\n  technical_summary,\n  news_signal,\n  fundamentals_signal,\n  social_signal\n}}];"
       },
       "id": "prepare-analyst-context",
       "name": "Prepare Analyst Context",
@@ -550,6 +550,35 @@
         }
       },
       "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action: 'append_agent_log', session_id: $json.session_id, agent_role: 'Portfolio Manager', log_type: 'decision', content: JSON.stringify($json.portfolio_decision) }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ta-push-log-portfolio-manager",
+      "name": "Push Log — Portfolio Manager",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3080,
+        160
+      ],
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "TaSupPrxyFn26ab2",
+          "name": "Supabase trading-agents-proxy"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -778,6 +807,17 @@
         [
           {
             "node": "Format Supervisor Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Supervisor Response": {
+      "main": [
+        [
+          {
+            "node": "Push Log — Portfolio Manager",
             "type": "main",
             "index": 0
           }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T08:38:54.817Z",
+  "updatedAt": "2026-05-04T10:22:05.066Z",
   "createdAt": "2026-05-02T06:46:04.494Z",
   "id": "YeGEiKF7ZndLF8YN",
   "name": "TradingAgents - Technical Analyst",
@@ -95,8 +95,7 @@
       "parameters": {
         "method": "GET",
         "url": "={{ $('Prepare Technical Context').first().json.alpaca_bars_url }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpCustomAuth",
+        "authentication": "none",
         "sendQuery": false,
         "sendHeaders": false,
         "sendBody": false,
@@ -110,12 +109,7 @@
         600,
         200
       ],
-      "credentials": {
-        "httpCustomAuth": {
-          "id": "Fn81k84jOum8RfUU",
-          "name": "Alpaca Key"
-        }
-      },
+      "credentials": {},
       "continueOnFail": true
     },
     {
@@ -156,8 +150,7 @@
       "parameters": {
         "method": "GET",
         "url": "={{ $json.tiingo_full_prices_url }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth",
+        "authentication": "genericCredentialType",
         "sendQuery": false,
         "sendHeaders": false,
         "sendBody": false,
@@ -167,7 +160,8 @@
               "fullResponse": true
             }
           }
-        }
+        },
+        "genericAuthType": "httpQueryAuth"
       },
       "id": "tiingo-http-fetch",
       "name": "Tiingo OHLCV Fetch",
@@ -178,7 +172,7 @@
         420
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "httpQueryAuth": {
           "id": "jEo9N4yIEkuPj5Df",
           "name": "Tiingo Key"
         }
@@ -189,8 +183,7 @@
       "parameters": {
         "method": "GET",
         "url": "={{ $('Prepare Technical Context').first().json.tiingo_full_prices_url }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth",
+        "authentication": "genericCredentialType",
         "sendQuery": false,
         "sendHeaders": false,
         "sendBody": false,
@@ -200,7 +193,8 @@
               "fullResponse": true
             }
           }
-        }
+        },
+        "genericAuthType": "httpQueryAuth"
       },
       "id": "tiingo-http-fetch-alpaca-fallback",
       "name": "Tiingo OHLCV (Alpaca miss)",
@@ -211,7 +205,7 @@
         360
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "httpQueryAuth": {
           "id": "jEo9N4yIEkuPj5Df",
           "name": "Tiingo Key"
         }
@@ -237,7 +231,7 @@
         "text": "={{ 'Market: ' + ($json.market || '') + '\\nTicker: ' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') + '\\n\\n' + ($json.symbol_routing_note || '') + '\\n\\nPrecomputed technical_metrics (see timeframe + source in JSON):\\n' + JSON.stringify($json.technical_metrics || ($json.technical_metrics_error ? { error: $json.technical_metrics_error } : null), null, 2) }}",
         "hasOutputParser": false,
         "options": {
-          "systemMessage": "={{ [\n  'You are a Technical Analyst. Indicators are precomputed in the workflow from either Alpaca 5-minute IEX bars (US) or Tiingo daily OHLCV (India/crypto). Read technical_metrics.timeframe and technical_metrics.source.',\n  ($json.technical_markers_context || ''),\n  '',\n  '### Instructions',\n  '- Anchor on RSI14, MACD, EMA9/EMA21, ATR14, vwap_window, last_close, and execution_price when provided.',\n  '- sma200 is rolling on the same bar series (200 daily bars or 200 5m bars when available); interpret accordingly.',\n  '- If technical_metrics is null or partial, explain gaps; never fabricate.',\n  '- Give bullish / neutral / bearish with 3–5 metric-backed bullets.'\n].join('\\n') }}"
+          "systemMessage": "={{ [\n  'You are a Technical Analyst. Indicators are precomputed in the workflow from either Alpaca 5-minute IEX bars (US) or Tiingo daily OHLCV (India/crypto). Read technical_metrics.timeframe and technical_metrics.source.',\n  ($json.technical_markers_context || ''),\n  '',\n  '### Instructions',\n  '- Anchor on RSI14, MACD, EMA9/EMA21, ATR14, vwap_window, last_close, and execution_price when provided.',\n  '- sma200 is rolling on the same bar series (200 daily bars or 200 5m bars when available); interpret accordingly.',\n  '- If technical_metrics is null or partial, explain gaps; never fabricate.',\n  '- Give a clear BULLISH / NEUTRAL / BEARISH signal verdict with 3-5 metric-backed bullets.',\n  '- Your response MUST end with a line starting with SIGNAL_JSON: followed by compact JSON.',\n  'Example last line: SIGNAL_JSON: {\\\"signal\\\":\\\"BULLISH\\\",\\\"rsi14\\\":55.2,\\\"macd_histogram\\\":0.12,\\\"ema_trend\\\":\\\"above\\\",\\\"confidence\\\":\\\"High\\\"}'\n].join('\\n') }}"
         }
       },
       "id": "agent-node",
@@ -270,6 +264,19 @@
           "name": "Saksham OpenAI Account"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const meta = $('Compute Technical Metrics').first().json;\nconst agentOutput = $json.output || $json.text || $json.content || '';\n\n// Extract structured signal from SIGNAL_JSON: line\nlet structuredSignal = null;\nconst lines = agentOutput.split('\\n');\nfor (const line of lines) {\n  const trimmed = line.trim();\n  if (trimmed.startsWith('SIGNAL_JSON:')) {\n    try {\n      structuredSignal = JSON.parse(trimmed.replace('SIGNAL_JSON:', '').trim());\n      break;\n    } catch (_) {}\n  }\n}\n\n// Fallback: infer from text sentiment\nif (!structuredSignal) {\n  const lower = agentOutput.toLowerCase();\n  const signal = lower.includes('bullish') ? 'BULLISH' : lower.includes('bearish') ? 'BEARISH' : 'NEUTRAL';\n  structuredSignal = { signal, confidence: 'Low' };\n}\n\nconst tm = meta.technical_metrics || {};\nconst technical_summary = {\n  signal: structuredSignal.signal || 'NEUTRAL',\n  confidence: structuredSignal.confidence || 'Low',\n  rsi14: structuredSignal.rsi14 ?? tm.rsi14 ?? null,\n  macd_histogram: structuredSignal.macd_histogram ?? tm.macd_histogram ?? null,\n  ema9: tm.ema9 ?? null,\n  ema21: tm.ema21 ?? null,\n  sma200: tm.sma200 ?? null,\n  atr14: tm.atr14 ?? null,\n  last_close: tm.last_close ?? null,\n  timeframe: tm.timeframe || '1d',\n  source: tm.source || 'unknown',\n  bars_used: tm.bars_used ?? null,\n  ema_trend: structuredSignal.ema_trend ?? ((tm.ema9 && tm.ema21) ? (tm.ema9 > tm.ema21 ? 'above' : 'below') : 'flat')\n};\n\n// Strip the SIGNAL_JSON line from prose output\nconst cleanOutput = lines.filter(l => !l.trim().startsWith('SIGNAL_JSON:')).join('\\n').trim();\n\nreturn [{ json: {\n  output: cleanOutput + '\\n\\nTECHNICAL_SUMMARY: ' + JSON.stringify(technical_summary),\n  technical_summary,\n  ticker: meta.ticker,\n  date: meta.date,\n  session_id: meta.session_id,\n  market: meta.market\n} }];"
+      },
+      "id": "format-technical-output",
+      "name": "Format Technical Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        304
+      ]
     }
   ],
   "connections": {
@@ -392,6 +399,17 @@
           {
             "node": "Technical Analyst",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technical Analyst": {
+      "main": [
+        [
+          {
+            "node": "Format Technical Output",
+            "type": "main",
             "index": 0
           }
         ]
