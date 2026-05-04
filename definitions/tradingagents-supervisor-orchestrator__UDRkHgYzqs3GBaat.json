@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T12:02:28.902Z",
+  "updatedAt": "2026-05-04T12:07:24.305Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -703,17 +703,67 @@
     },
     {
       "parameters": {
-        "jsCode": "\n// Update session status via Supabase REST API (avoids SQL injection from quotes in thesis)\nconst session_id = $json.session_id;\nconst decision = $json.portfolio_decision?.decision || 'HOLD';\nconst thesis = $json.portfolio_decision?.thesis || '';\nconst confidence = $json.portfolio_decision?.confidence || 'Medium';\n\nconst SUPABASE_URL = 'https://ralhkmpbslsdkwnqzqen.supabase.co';\nconst ANON_KEY = 'sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP';\n\nconst response = await fetch(\n  `${SUPABASE_URL}/rest/v1/trading_sessions?id=eq.${session_id}`,\n  {\n    method: 'PATCH',\n    headers: {\n      'apikey': ANON_KEY,\n      'Authorization': `Bearer ${ANON_KEY}`,\n      'Content-Type': 'application/json',\n      'Prefer': 'return=minimal'\n    },\n    body: JSON.stringify({\n      status: 'completed',\n      final_decision: decision,\n      executive_summary: thesis.slice(0, 2000),\n      investment_thesis: thesis.slice(0, 2000),\n      updated_at: new Date().toISOString()\n    })\n  }\n);\n\nreturn [{\n  json: {\n    session_id,\n    decision,\n    confidence,\n    status: response.ok ? 'updated' : 'failed',\n    httpStatus: response.status\n  }\n}];\n"
+        "method": "PATCH",
+        "url": "={{ 'https://ralhkmpbslsdkwnqzqen.supabase.co/rest/v1/trading_sessions?id=eq.' + $json.session_id }}",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'completed', final_decision: $json.portfolio_decision.decision, executive_summary: ($json.portfolio_decision.thesis || '').slice(0, 2000), investment_thesis: ($json.portfolio_decision.thesis || '').slice(0, 2000), updated_at: new Date().toISOString() }) }}",
+        "options": {
+          "timeout": 10000
+        }
       },
       "id": "update-session-complete",
       "name": "Update Session Complete",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         2400,
         500
       ],
       "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO trading_sessions (id, ticker, status, execution_price, evaluated, updated_at) VALUES ('{{ $json.body.session_id || $json.session_id }}', '{{ $json.body.ticker || $json.ticker }}', 'running', {{ $json.body.execution_price || $json.execution_price || 0 }}, false, NOW()) ON CONFLICT (id) DO NOTHING",
+        "options": {}
+      },
+      "id": "ensure-session-exists",
+      "name": "Ensure Session Exists",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        220,
+        500
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      }
     }
   ],
   "connections": {
@@ -742,6 +792,11 @@
           },
           {
             "node": "Respond to Webhook (Early)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ensure Session Exists",
             "type": "main",
             "index": 0
           }
