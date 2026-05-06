@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:44:57.852Z",
+  "updatedAt": "2026-05-06T14:59:12.370Z",
   "createdAt": "2026-05-02T06:46:05.746Z",
   "id": "qXgHkMpiqmOJqDqv",
   "name": "TradingAgents - Fundamentals Analyst",
@@ -7,6 +7,23 @@
   "active": true,
   "isArchived": false,
   "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cli-test-fundamentals-analyst",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "cli-test-fundamentals-webhook",
+      "name": "[CLI Test] Fundamentals Analyst Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        208,
+        150
+      ],
+      "webhookId": "cli-test-fundamentals-analyst"
+    },
     {
       "parameters": {},
       "id": "execute-workflow-trigger",
@@ -37,7 +54,7 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o",
+        "model": "gpt-4o-mini",
         "options": {
           "temperature": 0.2
         }
@@ -59,7 +76,9 @@
     },
     {
       "parameters": {
-        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker.toUpperCase()}}",
+        "method": "GET",
+        "url": "={{ \"http://72.61.231.160:8001/research?ticker=\" + ($json.ticker || '').toUpperCase() }}",
+        "toolDescription": "Fetches comprehensive financial data, including P/E ratio, market cap, and analyst recommendations for a given stock ticker.",
         "options": {},
         "specifySchema": true,
         "schemaType": "json",
@@ -76,7 +95,9 @@
     },
     {
       "parameters": {
-        "url": "http://72.61.231.160:8002/research?ticker={{$json.ticker.toUpperCase()}}",
+        "method": "GET",
+        "url": "={{ \"http://72.61.231.160:8002/research?ticker=\" + ($json.ticker || '').toUpperCase() }}",
+        "toolDescription": "Fallback tool to fetch financial data if the primary Yahoo tool fails. Requires stock ticker.",
         "options": {},
         "specifySchema": true,
         "schemaType": "json",
@@ -93,6 +114,17 @@
     }
   ],
   "connections": {
+    "cli-test-fundamentals-webhook": {
+      "main": [
+        [
+          {
+            "node": "Fundamentals Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Execute Workflow Trigger": {
       "main": [
         [
@@ -234,6 +266,7 @@
         "parameters": {
           "method": "GET",
           "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
+          "description": "Fetches comprehensive financial data, including P/E ratio, market cap, and analyst recommendations for a given stock ticker.",
           "sendHeaders": false,
           "options": {},
           "authentication": "none",
@@ -253,6 +286,7 @@
         "parameters": {
           "method": "GET",
           "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+          "description": "Fallback tool to fetch financial data if the primary Yahoo tool fails. Requires stock ticker.",
           "authentication": "none",
           "sendQuery": true,
           "queryParameters": {

@@ -1,11 +1,28 @@
 {
-  "updatedAt": "2026-05-06T14:44:53.850Z",
+  "updatedAt": "2026-05-06T14:59:09.249Z",
   "createdAt": "2026-05-02T06:46:04.691Z",
   "id": "bREGC66gC2ppRSio",
   "name": "TradingAgents - Social Media Analyst",
   "active": true,
   "isArchived": false,
   "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cli-test-social-analyst",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "cli-test-social-webhook",
+      "name": "[CLI Test] Social Analyst Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        150
+      ],
+      "webhookId": "cli-test-social-analyst"
+    },
     {
       "parameters": {},
       "id": "execute-workflow-trigger",
@@ -37,7 +54,7 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o",
+        "model": "gpt-4o-mini",
         "options": {
           "temperature": 0.2
         }
@@ -59,7 +76,8 @@
     },
     {
       "parameters": {
-        "url": "https://lunarcrush.com/api/4/public/coins/{{$json.ticker.toUpperCase()}}/meta",
+        "url": "={{ 'https://lunarcrush.com/api/4/public/coins/' + ($json.ticker || '').toUpperCase() + '/meta' }}",
+        "toolDescription": "Fetches social media metrics, including Galaxy Score and social volume, to gauge retail sentiment (primarily for crypto assets).",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "specifySchema": true,
@@ -83,6 +101,17 @@
     }
   ],
   "connections": {
+    "cli-test-social-webhook": {
+      "main": [
+        [
+          {
+            "node": "Social Media Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Execute Workflow Trigger": {
       "main": [
         [
