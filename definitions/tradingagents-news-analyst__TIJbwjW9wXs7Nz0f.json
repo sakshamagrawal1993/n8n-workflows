@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T12:10:44.062Z",
+  "updatedAt": "2026-05-06T06:44:59.201Z",
   "createdAt": "2026-05-02T06:46:03.780Z",
   "id": "TIJbwjW9wXs7Nz0f",
   "name": "TradingAgents - News Analyst",
@@ -59,17 +59,17 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "https://finnhub.io/api/v1/company-news?symbol={{$json.ticker}}&from={{new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10)}}&to={{new Date().toISOString().slice(0,10)}}",
-        "sendHeaders": false,
-        "options": {},
+        "url": "https://finnhub.io/api/v1/company-news?symbol={{$json.ticker.toUpperCase()}}&from={{new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10)}}&to={{new Date().toISOString().slice(0,10)}}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth"
+        "genericAuthType": "httpHeaderAuth",
+        "specifySchema": true,
+        "schemaType": "json",
+        "jsonSchema": "{\"type\": \"object\", \"properties\": {\"ticker\": {\"type\": \"string\", \"description\": \"The stock ticker symbol (e.g. AAPL, MSFT)\"}}, \"required\": [\"ticker\"]}"
       },
       "id": "tool-node",
       "name": "Get News Tool (Finnhub)",
-      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
       "position": [
         700,
         500

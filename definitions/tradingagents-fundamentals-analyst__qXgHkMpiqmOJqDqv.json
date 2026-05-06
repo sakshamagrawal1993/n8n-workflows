@@ -1,8 +1,9 @@
 {
-  "updatedAt": "2026-05-04T12:10:47.624Z",
+  "updatedAt": "2026-05-06T06:45:00.682Z",
   "createdAt": "2026-05-02T06:46:05.746Z",
   "id": "qXgHkMpiqmOJqDqv",
   "name": "TradingAgents - Fundamentals Analyst",
+  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -13,15 +14,14 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        200,
-        300
+        208,
+        304
       ]
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
-        "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a Fundamentals Analyst. Use the Yahoo Deep Research Tool to fetch financial data. If the VPS tool fails or returns an error, use the Supabase Deep Research (Fallback) tool instead. Evaluate company health focusing on P/E ratio, market cap, 52-week range, analyst target, and recommendation. Focus on factors that might cause significant price movement in the next 24 hours.\n\nYour response MUST end with a line starting with FUNDAMENTALS_SIGNAL: followed by compact JSON.\nExample: FUNDAMENTALS_SIGNAL: {\"health\":\"STRONG\",\"pe_ratio\":28.5,\"analyst_rec\":\"buy\",\"confidence\":\"High\"}"
         }
@@ -31,8 +31,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
-        500,
-        300
+        512,
+        304
       ]
     },
     {
@@ -47,8 +47,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1,
       "position": [
-        500,
-        500
+        512,
+        512
       ],
       "credentials": {
         "openAiApi": {
@@ -59,58 +59,37 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
-        "sendHeaders": false,
+        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker.toUpperCase()}}",
         "options": {},
-        "authentication": "none"
+        "specifySchema": true,
+        "schemaType": "json",
+        "jsonSchema": "{\"type\": \"object\", \"properties\": {\"ticker\": {\"type\": \"string\", \"description\": \"The stock ticker symbol (e.g. AAPL, MSFT)\"}}, \"required\": [\"ticker\"]}"
       },
-      "id": "tool-node",
-      "name": "Yahoo Deep Research Tool",
-      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
       "position": [
-        700,
-        500
-      ]
+        672,
+        448
+      ],
+      "id": "360658e1-ca24-487b-b0d1-93f1429995aa",
+      "name": "Yahoo Deep Research Tool"
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
-        "authentication": "none",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "action",
-              "value": "deep_research"
-            },
-            {
-              "name": "ticker",
-              "value": "={{ $json.ticker }}"
-            }
-          ]
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "sb_publishable_gMdAKFb5sgN89c7OzhIRdA_nrNGz3pP"
-            }
-          ]
-        },
-        "options": {}
+        "url": "http://72.61.231.160:8002/research?ticker={{$json.ticker.toUpperCase()}}",
+        "options": {},
+        "specifySchema": true,
+        "schemaType": "json",
+        "jsonSchema": "{\"type\": \"object\", \"properties\": {\"ticker\": {\"type\": \"string\", \"description\": \"The stock ticker symbol (e.g. AAPL, MSFT)\"}}, \"required\": [\"ticker\"]}"
       },
-      "id": "tool-supabase-deep-research",
-      "name": "Supabase Deep Research (Fallback)",
-      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
       "position": [
-        900,
-        500
-      ]
+        768,
+        544
+      ],
+      "id": "600911e8-6b2c-4678-a7e6-ebbebe64348d",
+      "name": "Supabase Deep Research (Fallback)"
     }
   ],
   "connections": {
@@ -162,9 +141,10 @@
   "settings": {},
   "staticData": null,
   "meta": null,
-  "pinData": null,
-  "versionId": "c0aef082-6e74-430f-bf84-7c6c5b144ade",
-  "activeVersionId": "c0aef082-6e74-430f-bf84-7c6c5b144ade",
+  "pinData": {},
+  "versionId": "37316bac-989e-4cd2-9828-60bb133f4df2",
+  "activeVersionId": "2ad0e4cd-33e9-4b48-9e3e-2762e5ea8068",
+  "versionCounter": 143,
   "triggerCount": 0,
   "shared": [
     {
@@ -172,7 +152,17 @@
       "createdAt": "2026-05-02T06:46:05.746Z",
       "role": "workflow:owner",
       "workflowId": "qXgHkMpiqmOJqDqv",
-      "projectId": "ndLqkF3n8R5kDVa5"
+      "projectId": "ndLqkF3n8R5kDVa5",
+      "project": {
+        "updatedAt": "2025-11-30T06:41:49.341Z",
+        "createdAt": "2025-11-29T13:35:58.038Z",
+        "id": "ndLqkF3n8R5kDVa5",
+        "name": "Saksham Agrawal <sakshamdummy@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6f982a41-82d3-43d9-8302-88edf5fa7ce5"
+      }
     }
   ],
   "tags": [
@@ -182,5 +172,191 @@
       "id": "IAZacqMxcf5i505L",
       "name": "managed-as-code"
     }
-  ]
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-04T13:08:51.488Z",
+    "createdAt": "2026-05-04T13:08:51.488Z",
+    "versionId": "2ad0e4cd-33e9-4b48-9e3e-2762e5ea8068",
+    "workflowId": "qXgHkMpiqmOJqDqv",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "execute-workflow-trigger",
+        "name": "Execute Workflow Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          200,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+          "hasOutputParser": false,
+          "options": {
+            "systemMessage": "You are a Fundamentals Analyst. Use the Yahoo Deep Research Tool to fetch financial data. If the VPS tool fails or returns an error, use the Supabase Deep Research (Fallback) tool instead. Evaluate company health focusing on P/E ratio, market cap, 52-week range, analyst target, and recommendation. Focus on factors that might cause significant price movement in the next 24 hours.\n\nYour response MUST end with a line starting with FUNDAMENTALS_SIGNAL: followed by compact JSON.\nExample: FUNDAMENTALS_SIGNAL: {\"health\":\"STRONG\",\"pe_ratio\":28.5,\"analyst_rec\":\"buy\",\"confidence\":\"High\"}"
+          }
+        },
+        "id": "agent-node",
+        "name": "Fundamentals Analyst",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          500,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "model": "gpt-4o",
+          "options": {
+            "temperature": 0.2
+          }
+        },
+        "id": "llm-node",
+        "name": "OpenAI Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1,
+        "position": [
+          500,
+          500
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "F8K5WXRWzmnY0vcZ",
+            "name": "Saksham OpenAI Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
+          "sendHeaders": false,
+          "options": {},
+          "authentication": "none",
+          "specifySchema": true,
+          "schema": "{\"type\": \"object\", \"properties\": {\"ticker\": {\"type\": \"string\"}}, \"required\": [\"ticker\"]}"
+        },
+        "id": "tool-node",
+        "name": "Yahoo Deep Research Tool",
+        "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+        "typeVersion": 1.1,
+        "position": [
+          700,
+          500
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "https://ralhkmpbslsdkwnqzqen.supabase.co/functions/v1/trading-agents-proxy",
+          "authentication": "none",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "action",
+                "value": "deep_research"
+              },
+              {
+                "name": "ticker",
+                "value": "={{ $json.ticker }}"
+              }
+            ]
+          },
+          "headerParameters": {
+            "parameters": []
+          },
+          "options": {},
+          "specifySchema": true,
+          "schema": "{\"type\": \"object\", \"properties\": {\"ticker\": {\"type\": \"string\"}}, \"required\": [\"ticker\"]}"
+        },
+        "id": "tool-supabase-deep-research",
+        "name": "Supabase Deep Research (Fallback)",
+        "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+        "typeVersion": 1.1,
+        "position": [
+          900,
+          500
+        ],
+        "credentials": {
+          "httpCustomAuth": {
+            "id": "SjXW7AtzN74GFV8y",
+            "name": "Supabase trading-agents-proxy"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Execute Workflow Trigger": {
+        "main": [
+          [
+            {
+              "node": "Fundamentals Analyst",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Fundamentals Analyst",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Yahoo Deep Research Tool": {
+        "ai_tool": [
+          [
+            {
+              "node": "Fundamentals Analyst",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Supabase Deep Research (Fallback)": {
+        "ai_tool": [
+          [
+            {
+              "node": "Fundamentals Analyst",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Saksham Agrawal",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-05-04T13:08:51.509Z",
+        "id": 1705,
+        "workflowId": "qXgHkMpiqmOJqDqv",
+        "versionId": "2ad0e4cd-33e9-4b48-9e3e-2762e5ea8068",
+        "event": "deactivated",
+        "userId": "6f982a41-82d3-43d9-8302-88edf5fa7ce5"
+      },
+      {
+        "createdAt": "2026-05-04T13:08:51.518Z",
+        "id": 1706,
+        "workflowId": "qXgHkMpiqmOJqDqv",
+        "versionId": "2ad0e4cd-33e9-4b48-9e3e-2762e5ea8068",
+        "event": "activated",
+        "userId": "6f982a41-82d3-43d9-8302-88edf5fa7ce5"
+      }
+    ]
+  }
 }

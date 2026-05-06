@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T12:10:40.827Z",
+  "updatedAt": "2026-05-06T06:44:56.768Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -36,6 +36,31 @@
             "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}",
             "market": "={{ ($('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.market !== undefined && $('Webhook (Trigger)').first().json.body.market !== null && String($('Webhook (Trigger)').first().json.body.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.body.market).trim().toLowerCase() : (($('Webhook (Trigger)').first().json.market !== undefined && $('Webhook (Trigger)').first().json.market !== null && String($('Webhook (Trigger)').first().json.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.market).trim().toLowerCase() : '') }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-technical-analyst",
@@ -60,6 +85,31 @@
             "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}",
             "market": "={{ ($('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.market !== undefined && $('Webhook (Trigger)').first().json.body.market !== null && String($('Webhook (Trigger)').first().json.body.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.body.market).trim().toLowerCase() : (($('Webhook (Trigger)').first().json.market !== undefined && $('Webhook (Trigger)').first().json.market !== null && String($('Webhook (Trigger)').first().json.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.market).trim().toLowerCase() : '') }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-news-analyst",
@@ -84,6 +134,31 @@
             "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}",
             "market": "={{ ($('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.market !== undefined && $('Webhook (Trigger)').first().json.body.market !== null && String($('Webhook (Trigger)').first().json.body.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.body.market).trim().toLowerCase() : (($('Webhook (Trigger)').first().json.market !== undefined && $('Webhook (Trigger)').first().json.market !== null && String($('Webhook (Trigger)').first().json.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.market).trim().toLowerCase() : '') }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-fundamentals-analyst",
@@ -108,6 +183,31 @@
             "execution_price": "={{ $('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.execution_price !== undefined && $('Webhook (Trigger)').first().json.body.execution_price !== null ? $('Webhook (Trigger)').first().json.body.execution_price : ($('Webhook (Trigger)').first().json.execution_price !== undefined ? $('Webhook (Trigger)').first().json.execution_price : null) }}",
             "market": "={{ ($('Webhook (Trigger)').first().json.body && $('Webhook (Trigger)').first().json.body.market !== undefined && $('Webhook (Trigger)').first().json.body.market !== null && String($('Webhook (Trigger)').first().json.body.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.body.market).trim().toLowerCase() : (($('Webhook (Trigger)').first().json.market !== undefined && $('Webhook (Trigger)').first().json.market !== null && String($('Webhook (Trigger)').first().json.market).trim() !== '') ? String($('Webhook (Trigger)').first().json.market).trim().toLowerCase() : '') }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-social-analyst",
@@ -194,6 +294,31 @@
             "fundamentals_report": "={{ $json.fundamentals_report }}",
             "social_report": "={{ $json.social_report }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-bull-researcher",
@@ -222,6 +347,31 @@
             "fundamentals_report": "={{ $json.fundamentals_report }}",
             "social_report": "={{ $json.social_report }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-bear-researcher",
@@ -280,6 +430,31 @@
             "bull_report": "={{ $json.bull_report }}",
             "bear_report": "={{ $json.bear_report }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-research-manager",
@@ -324,6 +499,31 @@
             "fundamentals_report": "={{ $json.fundamentals_report }}",
             "social_report": "={{ $json.social_report }}"
           }
+        },
+        "mode": "specific",
+        "parameters": {
+          "values": [
+            {
+              "name": "ticker",
+              "value": "={{ $json.ticker }}"
+            },
+            {
+              "name": "execution_price",
+              "value": "={{ $json.execution_price }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $json.id || $json.session_id }}"
+            },
+            {
+              "name": "market",
+              "value": "={{ $json.market }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.updated_at ? $json.updated_at.split('T')[0] : new Date().toISOString().split('T')[0] }}"
+            }
+          ]
         }
       },
       "id": "execute-portfolio-manager",
@@ -725,7 +925,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO trading_sessions (id, ticker, status, execution_price, evaluated, updated_at) VALUES ('{{ $json.body.session_id || $json.session_id }}', '{{ $json.body.ticker || $json.ticker }}', 'running', {{ $json.body.execution_price || $json.execution_price || 0 }}, false, NOW()) ON CONFLICT (id) DO NOTHING",
+        "query": "INSERT INTO trading_sessions (id, ticker, status, execution_price, evaluated, updated_at) VALUES ('{{ $json.body.session_id || $json.session_id }}', '{{ $json.body.ticker || $json.ticker }}', 'running', {{ $json.body.execution_price || $json.execution_price || 0 }}, false, NOW()) ON CONFLICT (id) DO UPDATE SET updated_at = NOW() RETURNING *",
         "options": {}
       },
       "id": "ensure-session-exists",

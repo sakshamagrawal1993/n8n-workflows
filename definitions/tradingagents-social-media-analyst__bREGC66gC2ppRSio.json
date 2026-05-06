@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-04T12:10:38.508Z",
+  "updatedAt": "2026-05-06T06:44:55.149Z",
   "createdAt": "2026-05-02T06:46:04.691Z",
   "id": "bREGC66gC2ppRSio",
   "name": "TradingAgents - Social Media Analyst",
@@ -59,17 +59,17 @@
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "https://lunarcrush.com/api/4/public/coins/{{$json.ticker}}/meta",
-        "sendHeaders": false,
-        "options": {},
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth"
+        "url": "https://lunarcrush.com/api/4/public/coins/{{$json.ticker.toUpperCase()}}/meta",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "specifySchema": true,
+        "schemaType": "json",
+        "jsonSchema": "{\"type\": \"object\", \"properties\": {\"ticker\": {\"type\": \"string\", \"description\": \"The stock ticker symbol (e.g. AAPL, MSFT)\"}}, \"required\": [\"ticker\"]}"
       },
       "id": "tool-node",
       "name": "Social Sentiment Tool (LunarCrush)",
-      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
       "position": [
         700,
         500
