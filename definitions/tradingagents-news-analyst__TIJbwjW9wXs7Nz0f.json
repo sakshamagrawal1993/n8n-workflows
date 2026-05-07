@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:59:11.430Z",
+  "updatedAt": "2026-05-07T15:20:09.570Z",
   "createdAt": "2026-05-02T06:46:03.780Z",
   "id": "TIJbwjW9wXs7Nz0f",
   "name": "TradingAgents - News Analyst",
@@ -37,7 +37,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' \u2014 Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a News Analyst. Use the Finnhub Company News tool to fetch recent news for the given ticker. Analyze sentiment and identify catalysts likely to impact the stock over the next 24 hours.\n\nYour response MUST end with a line starting with NEWS_SIGNAL: followed by compact JSON.\nExample last line: NEWS_SIGNAL: {\"sentiment\":\"BULLISH\",\"catalyst\":\"Fed rate cut expected\",\"confidence\":\"High\",\"headline_count\":5}"
@@ -98,6 +98,45 @@
           "name": "Finnhub API Key"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}",
+            "agent_role": "News Analyst",
+            "log_type": "research",
+            "content": "={{ String($json.output || $json.text || $json.content || '') }}"
+          }
+        }
+      },
+      "id": "push-log-internal-node",
+      "name": "Push Log \u2014 Internal",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        750,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -140,6 +179,17 @@
           {
             "node": "News Analyst",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News Analyst": {
+      "main": [
+        [
+          {
+            "node": "Push Log \u2014 Internal",
+            "type": "main",
             "index": 0
           }
         ]

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:59:09.579Z",
+  "updatedAt": "2026-05-07T15:20:05.188Z",
   "createdAt": "2026-05-02T06:46:02.854Z",
   "id": "DXp8YLaipORggHwr",
   "name": "TradingAgents - Research Manager",
@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o",
+        "model": "gpt-4o-mini",
         "options": {
           "temperature": 0.2
         }
@@ -60,7 +60,8 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://72.61.231.160:8001/research?ticker={{$json.ticker}}",
+        "url": "={{ 'http://72.61.231.160:8001/research?ticker=' + ($json.ticker || '').toUpperCase() }}",
+        "toolDescription": "Fetches comprehensive financial data, including P/E ratio, market cap, and analyst recommendations for a given stock ticker.",
         "sendHeaders": false,
         "options": {},
         "authentication": "none"
@@ -73,6 +74,45 @@
         700,
         500
       ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}",
+            "agent_role": "Research Manager",
+            "log_type": "research",
+            "content": "={{ String($json.output || $json.text || $json.content || '') }}"
+          }
+        }
+      },
+      "id": "push-log-internal-node",
+      "name": "Push Log \u2014 Internal",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        750,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -104,6 +144,17 @@
           {
             "node": "Research Manager",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Manager": {
+      "main": [
+        [
+          {
+            "node": "Push Log \u2014 Internal",
+            "type": "main",
             "index": 0
           }
         ]

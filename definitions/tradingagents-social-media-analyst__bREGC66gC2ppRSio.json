@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:59:09.249Z",
+  "updatedAt": "2026-05-07T15:20:04.603Z",
   "createdAt": "2026-05-02T06:46:04.691Z",
   "id": "bREGC66gC2ppRSio",
   "name": "TradingAgents - Social Media Analyst",
@@ -37,7 +37,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' \u2014 Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a Social Media Analyst. For crypto assets, use the LunarCrush tool to get Galaxy Score and social volume. For US/Indian equities, the LunarCrush tool may not return data - in that case, use your knowledge of general market sentiment and any observable retail interest patterns for this ticker. Assess short-term social sentiment (bullish/bearish/neutral) for the next 24 hours.\n\nYour response MUST end with a line starting with SOCIAL_SIGNAL: followed by compact JSON.\nExample: SOCIAL_SIGNAL: {\"sentiment\":\"BULLISH\",\"hype_level\":\"HIGH\",\"confidence\":\"Medium\",\"data_source\":\"lunarcrush\"}"
@@ -98,6 +98,45 @@
           "name": "LunarCrush Key"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}",
+            "agent_role": "Social Media Analyst",
+            "log_type": "research",
+            "content": "={{ String($json.output || $json.text || $json.content || '') }}"
+          }
+        }
+      },
+      "id": "push-log-internal-node",
+      "name": "Push Log \u2014 Internal",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        750,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -140,6 +179,17 @@
           {
             "node": "Social Media Analyst",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Media Analyst": {
+      "main": [
+        [
+          {
+            "node": "Push Log \u2014 Internal",
+            "type": "main",
             "index": 0
           }
         ]

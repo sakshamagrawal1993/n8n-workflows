@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:59:12.370Z",
+  "updatedAt": "2026-05-07T15:20:10.563Z",
   "createdAt": "2026-05-02T06:46:05.746Z",
   "id": "qXgHkMpiqmOJqDqv",
   "name": "TradingAgents - Fundamentals Analyst",
@@ -38,7 +38,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' \u2014 Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "options": {
           "systemMessage": "You are a Fundamentals Analyst. Use the Yahoo Deep Research Tool to fetch financial data. If the VPS tool fails or returns an error, use the Supabase Deep Research (Fallback) tool instead. Evaluate company health focusing on P/E ratio, market cap, 52-week range, analyst target, and recommendation. Focus on factors that might cause significant price movement in the next 24 hours.\n\nYour response MUST end with a line starting with FUNDAMENTALS_SIGNAL: followed by compact JSON.\nExample: FUNDAMENTALS_SIGNAL: {\"health\":\"STRONG\",\"pe_ratio\":28.5,\"analyst_rec\":\"buy\",\"confidence\":\"High\"}"
         }
@@ -111,6 +111,45 @@
       ],
       "id": "600911e8-6b2c-4678-a7e6-ebbebe64348d",
       "name": "Supabase Deep Research (Fallback)"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}",
+            "agent_role": "Fundamentals Analyst",
+            "log_type": "research",
+            "content": "={{ String($json.output || $json.text || $json.content || '') }}"
+          }
+        }
+      },
+      "id": "push-log-internal-node",
+      "name": "Push Log \u2014 Internal",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        762,
+        304
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -164,6 +203,17 @@
           {
             "node": "Fundamentals Analyst",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fundamentals Analyst": {
+      "main": [
+        [
+          {
+            "node": "Push Log \u2014 Internal",
+            "type": "main",
             "index": 0
           }
         ]
@@ -225,7 +275,7 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+          "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' \u2014 Reference price at run (from app): ' + String($json.execution_price) : '') }}",
           "hasOutputParser": false,
           "options": {
             "systemMessage": "You are a Fundamentals Analyst. Use the Yahoo Deep Research Tool to fetch financial data. If the VPS tool fails or returns an error, use the Supabase Deep Research (Fallback) tool instead. Evaluate company health focusing on P/E ratio, market cap, 52-week range, analyst target, and recommendation. Focus on factors that might cause significant price movement in the next 24 hours.\n\nYour response MUST end with a line starting with FUNDAMENTALS_SIGNAL: followed by compact JSON.\nExample: FUNDAMENTALS_SIGNAL: {\"health\":\"STRONG\",\"pe_ratio\":28.5,\"analyst_rec\":\"buy\",\"confidence\":\"High\"}"

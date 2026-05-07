@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:59:10.902Z",
+  "updatedAt": "2026-05-07T15:20:08.641Z",
   "createdAt": "2026-05-02T06:46:04.494Z",
   "id": "YeGEiKF7ZndLF8YN",
   "name": "TradingAgents - Technical Analyst",
@@ -261,7 +261,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ 'Market: ' + ($json.market || '') + '\\nTicker: ' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') + '\\n\\n' + ($json.symbol_routing_note || '') + '\\n\\nPrecomputed technical_metrics (see timeframe + source in JSON):\\n' + JSON.stringify($json.technical_metrics || ($json.technical_metrics_error ? { error: $json.technical_metrics_error } : null), null, 2) }}",
+        "text": "={{ 'Market: ' + ($json.market || '') + '\\nTicker: ' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' \u2014 Reference price at run (from app): ' + String($json.execution_price) : '') + '\\n\\n' + ($json.symbol_routing_note || '') + '\\n\\nPrecomputed technical_metrics (see timeframe + source in JSON):\\n' + JSON.stringify($json.technical_metrics || ($json.technical_metrics_error ? { error: $json.technical_metrics_error } : null), null, 2) }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "={{ [\n  'You are a Technical Analyst. Indicators are precomputed in the workflow from either Alpaca 5-minute IEX bars (US) or Tiingo daily OHLCV (India/crypto). Read technical_metrics.timeframe and technical_metrics.source.',\n  ($json.technical_markers_context || ''),\n  '',\n  '### Instructions',\n  '- Anchor on RSI14, MACD, EMA9/EMA21, ATR14, vwap_window, last_close, and execution_price when provided.',\n  '- sma200 is rolling on the same bar series (200 daily bars or 200 5m bars when available); interpret accordingly.',\n  '- If technical_metrics is null or partial, explain gaps; never fabricate.',\n  '- Give a clear BULLISH / NEUTRAL / BEARISH signal verdict with 3-5 metric-backed bullets.',\n  '- Your response MUST end with a line starting with SIGNAL_JSON: followed by compact JSON.',\n  'Example last line: SIGNAL_JSON: {\\\"signal\\\":\\\"BULLISH\\\",\\\"rsi14\\\":55.2,\\\"macd_histogram\\\":0.12,\\\"ema_trend\\\":\\\"above\\\",\\\"confidence\\\":\\\"High\\\"}'\n].join('\\n') }}"
@@ -310,6 +310,45 @@
         1200,
         304
       ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}",
+            "agent_role": "Technical Analyst",
+            "log_type": "research",
+            "content": "={{ String($json.output || $json.text || $json.content || '') }}"
+          }
+        }
+      },
+      "id": "push-log-internal-node",
+      "name": "Push Log \u2014 Internal",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1250,
+        304
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -453,6 +492,13 @@
         [
           {
             "node": "Format Technical Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Push Log \u2014 Internal",
             "type": "main",
             "index": 0
           }

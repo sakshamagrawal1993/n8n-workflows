@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-06T14:59:08.767Z",
+  "updatedAt": "2026-05-07T15:20:04.170Z",
   "createdAt": "2026-05-02T06:46:04.350Z",
   "id": "AUTiS5Q4Eh5r2KXQ",
   "name": "TradingAgents - Bull Researcher",
@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "model": "gpt-4o",
+        "model": "gpt-4o-mini",
         "options": {
           "temperature": 0.2
         }
@@ -60,7 +60,8 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://newsapi.org/v2/everything?q={{$json.ticker}}&sortBy=relevancy",
+        "url": "={{ 'https://newsapi.org/v2/everything?q=' + ($json.ticker || '').toUpperCase() + '&sortBy=relevancy' }}",
+        "toolDescription": "Search for specific news articles and sentiment related to a bullish thesis for the given ticker.",
         "sendHeaders": false,
         "options": {},
         "authentication": "predefinedCredentialType",
@@ -80,6 +81,45 @@
           "name": "NewsAPI Key"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "trading_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}",
+            "agent_role": "Bull Researcher",
+            "log_type": "debate",
+            "content": "={{ String($json.output || $json.text || $json.content || '') }}"
+          }
+        }
+      },
+      "id": "push-log-internal-node",
+      "name": "Push Log \u2014 Internal",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        750,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "TzhNsURks708nQk6",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -111,6 +151,17 @@
           {
             "node": "Bull Researcher",
             "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bull Researcher": {
+      "main": [
+        [
+          {
+            "node": "Push Log \u2014 Internal",
+            "type": "main",
             "index": 0
           }
         ]

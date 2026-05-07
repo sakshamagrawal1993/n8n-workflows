@@ -23,37 +23,46 @@ def update_cred(cred_id, data):
     else:
         print(f"Failed to update {cred_id}: {response.status_code} - {response.text}")
 
-# Credentials to update
+# Credentials to update, reading from environment variables
 creds = [
     # Tiingo
-    ("EsGCnfZqj2CxQzwn", {"name": "Authorization", "value": "Token 31b911660b154e0188bd1fc4d75f750811c08e85"}),
+    ("EsGCnfZqj2CxQzwn", {"name": "Authorization", "value": f"Token {os.environ.get('TIINGO_TOKEN')}"}),
     # Polygon
-    ("8MysHa1RsYucneka", {"name": "apiKey", "value": "2m1zQPNAWwlk3z_M47p_2xpAzvKR4XTD"}),
+    ("8MysHa1RsYucneka", {"name": "apiKey", "value": os.environ.get('POLYGON_API_KEY')}),
     # FMP
-    ("flJx7pYglGHQZrTL", {"name": "apikey", "value": "KqnQDacRJUmyxAoFvfr1QfNJquwbe1ww"}),
+    ("flJx7pYglGHQZrTL", {"name": "apikey", "value": os.environ.get('FMP_API_KEY')}),
     # Finnhub
-    ("SR4cEU6bDqoofw6I", {"name": "X-Finnhub-Token", "value": "d7qe8q9r01qi8jan4910d7qe8q9r01qi8jan491g"}),
+    ("SR4cEU6bDqoofw6I", {"name": "X-Finnhub-Token", "value": os.environ.get('FINNHUB_TOKEN')}),
     # NewsAPI
-    ("jFJNE26xGZnWlJNQ", {"name": "X-Api-Key", "value": "f3780986bb1444f693627b00c47d49b4"}),
+    ("jFJNE26xGZnWlJNQ", {"name": "X-Api-Key", "value": os.environ.get('NEWSAPI_KEY')}),
     # EODHD
-    ("jNeJqu0SLOpdQKgH", {"name": "api_token", "value": "69f51d32b3b751.88792528"}),
+    ("jNeJqu0SLOpdQKgH", {"name": "api_token", "value": os.environ.get('EODHD_TOKEN')}),
     # LunarCrush
-    ("p9h7gEqpN0UA9E32", {"name": "Authorization", "value": "Bearer df0apn8og18cdk3dewfco0iwnvmongkzq10vft19"}),
+    ("p9h7gEqpN0UA9E32", {"name": "Authorization", "value": f"Bearer {os.environ.get('LUNARCRUSH_TOKEN')}"}),
     # TwelveData
-    ("tbP5GLjoGhoInNOt", {"name": "apikey", "value": "72e66e5f22c8493c9b9dc5f8d3f88ea4"}),
+    ("tbP5GLjoGhoInNOt", {"name": "apikey", "value": os.environ.get('TWELVEDATA_API_KEY')}),
 ]
 
-# Alpaca (Custom Auth) - Need to be careful with the structure
-# Typically n8n Custom Auth uses a 'json' string or internal object
-alpaca_data = {
-    "json": json.dumps({
-        "headers": [
-            {"name": "APCA-API-KEY-ID", "value": "PKEIOGQAMNAWDHMPKT6GYBWZDO"},
-            {"name": "APCA-API-SECRET-KEY", "value": "3XG42TtY53hyq6gNsyqV4j93TTtpkZwSUjoGqAx8ra4w"}
-        ]
-    })
-}
-update_cred("Fn81k84jOum8RfUU", alpaca_data)
+# Alpaca (Custom Auth)
+alpaca_key_id = os.environ.get('ALPACA_API_KEY_ID')
+alpaca_secret_key = os.environ.get('ALPACA_API_SECRET_KEY')
+
+if alpaca_key_id and alpaca_secret_key:
+    alpaca_data = {
+        "json": json.dumps({
+            "headers": [
+                {"name": "APCA-API-KEY-ID", "value": alpaca_key_id},
+                {"name": "APCA-API-SECRET-KEY", "value": alpaca_secret_key}
+            ]
+        })
+    }
+    update_cred("Fn81k84jOum8RfUU", alpaca_data)
+else:
+    print("Skipping Alpaca update: ALPACA_API_KEY_ID or ALPACA_API_SECRET_KEY not set")
 
 for cid, data in creds:
-    update_cred(cid, data)
+    # Check if value is set before trying to update
+    if data["value"] and "None" not in data["value"]:
+        update_cred(cid, data)
+    else:
+        print(f"Skipping update for {cid}: Environment variable not set")
