@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-07T15:20:07.282Z",
+  "updatedAt": "2026-05-07T15:38:08.483Z",
   "createdAt": "2026-05-01T16:31:02.684Z",
   "id": "UDRkHgYzqs3GBaat",
   "name": "TradingAgents - Supervisor Orchestrator",
@@ -537,7 +537,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const base = $('Prepare Manager Context').first().json;\nconst portfolioRaw = $node['Call Portfolio Manager Sub-workflow'].json;\nconst portfolioText = portfolioRaw.output || portfolioRaw.text || portfolioRaw.content || JSON.stringify(portfolioRaw);\nlet portfolioDecision = portfolioText;\ntry {\n  portfolioDecision = JSON.parse(portfolioText);\n} catch (error) {\n  const match = String(portfolioText).match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    try { portfolioDecision = JSON.parse(match[0]); } catch (_) {}\n  }\n}\n// logs streamed live via \"Push Log \u2014 *\" HTTP nodes \u2192 append_agent_log; keep empty so Edge does not bulk-insert duplicates.\nreturn [{ json: {\n  session_id: base.session_id,\n  ticker: base.ticker,\n  portfolio_decision: portfolioDecision,\n  logs: []\n}}];"
+        "jsCode": "const base = $('Prepare Manager Context').first().json;\nconst portfolioRaw = $node['Call Portfolio Manager Sub-workflow'].json;\nconst portfolioText = portfolioRaw.output || portfolioRaw.text || portfolioRaw.content || JSON.stringify(portfolioRaw);\nlet portfolioDecision = portfolioText;\ntry {\n  portfolioDecision = JSON.parse(portfolioText);\n} catch (error) {\n  const match = String(portfolioText).match(/\\{[\\s\\S]*\\}/);\n  if (match) {\n    try { portfolioDecision = JSON.parse(match[0]); } catch (_) {}\n  }\n}\n// logs streamed live via \"Push Log — *\" HTTP nodes → append_agent_log; keep empty so Edge does not bulk-insert duplicates.\nreturn [{ json: {\n  session_id: base.session_id,\n  ticker: base.ticker,\n  portfolio_decision: portfolioDecision,\n  logs: []\n}}];"
       },
       "id": "format-supervisor-response",
       "name": "Format Supervisor Response",

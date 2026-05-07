@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-07T15:20:09.570Z",
+  "updatedAt": "2026-05-07T15:38:09.659Z",
   "createdAt": "2026-05-02T06:46:03.780Z",
   "id": "TIJbwjW9wXs7Nz0f",
   "name": "TradingAgents - News Analyst",
@@ -37,7 +37,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' \u2014 Reference price at run (from app): ' + String($json.execution_price) : '') }}",
+        "text": "={{ 'Market: ' + String($json.market || '') + '\\n' + $json.ticker + ' on ' + $json.date + ($json.execution_price !== undefined && $json.execution_price !== null && String($json.execution_price) !== '' ? ' — Reference price at run (from app): ' + String($json.execution_price) : '') }}",
         "hasOutputParser": false,
         "options": {
           "systemMessage": "You are a News Analyst. Use the Finnhub Company News tool to fetch recent news for the given ticker. Analyze sentiment and identify catalysts likely to impact the stock over the next 24 hours.\n\nYour response MUST end with a line starting with NEWS_SIGNAL: followed by compact JSON.\nExample last line: NEWS_SIGNAL: {\"sentiment\":\"BULLISH\",\"catalyst\":\"Fed rate cut expected\",\"confidence\":\"High\",\"headline_count\":5}"
@@ -123,7 +123,7 @@
         }
       },
       "id": "push-log-internal-node",
-      "name": "Push Log \u2014 Internal",
+      "name": "Push Log — Internal",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
@@ -188,7 +188,7 @@
       "main": [
         [
           {
-            "node": "Push Log \u2014 Internal",
+            "node": "Push Log — Internal",
             "type": "main",
             "index": 0
           }

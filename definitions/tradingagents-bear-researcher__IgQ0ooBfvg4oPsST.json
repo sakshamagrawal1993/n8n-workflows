@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-07T15:20:06.856Z",
+  "updatedAt": "2026-05-07T15:38:08.318Z",
   "createdAt": "2026-05-02T06:46:02.639Z",
   "id": "IgQ0ooBfvg4oPsST",
   "name": "TradingAgents - Bear Researcher",
@@ -106,7 +106,7 @@
         }
       },
       "id": "push-log-internal-node",
-      "name": "Push Log \u2014 Internal",
+      "name": "Push Log — Internal",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
@@ -160,7 +160,7 @@
       "main": [
         [
           {
-            "node": "Push Log \u2014 Internal",
+            "node": "Push Log — Internal",
             "type": "main",
             "index": 0
           }

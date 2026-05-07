@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-07T15:20:05.188Z",
+  "updatedAt": "2026-05-07T15:38:07.636Z",
   "createdAt": "2026-05-02T06:46:02.854Z",
   "id": "DXp8YLaipORggHwr",
   "name": "TradingAgents - Research Manager",
@@ -99,7 +99,7 @@
         }
       },
       "id": "push-log-internal-node",
-      "name": "Push Log \u2014 Internal",
+      "name": "Push Log — Internal",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [
@@ -153,7 +153,7 @@
       "main": [
         [
           {
-            "node": "Push Log \u2014 Internal",
+            "node": "Push Log — Internal",
             "type": "main",
             "index": 0
           }

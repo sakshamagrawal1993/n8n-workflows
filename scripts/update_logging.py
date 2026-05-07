@@ -23,47 +23,46 @@ WORKFLOW_UPDATES = {
     "tradingagents-news-analyst__TIJbwjW9wXs7Nz0f.json": {
         "role": "News Analyst",
         "log_type": "research",
-        "last_node": "agent-node"
+        "last_node": "News Analyst"
     },
     "tradingagents-technical-analyst__YeGEiKF7ZndLF8YN.json": {
         "role": "Technical Analyst",
         "log_type": "research",
-        "last_node": "agent-node"
+        "last_node": "Format Technical Output"
     },
     "tradingagents-fundamentals-analyst__qXgHkMpiqmOJqDqv.json": {
         "role": "Fundamentals Analyst",
         "log_type": "research",
-        "last_node": "agent-node"
+        "last_node": "Fundamentals Analyst"
     },
     "tradingagents-social-media-analyst__bREGC66gC2ppRSio.json": {
         "role": "Social Media Analyst",
         "log_type": "research",
-        "last_node": "agent-node"
+        "last_node": "Social Media Analyst"
     },
     "tradingagents-bull-researcher__AUTiS5Q4Eh5r2KXQ.json": {
         "role": "Bull Researcher",
         "log_type": "debate",
-        "last_node": "agent-node"
+        "last_node": "Bull Researcher"
     },
     "tradingagents-bear-researcher__IgQ0ooBfvg4oPsST.json": {
         "role": "Bear Researcher",
         "log_type": "debate",
-        "last_node": "agent-node"
+        "last_node": "Bear Researcher"
     },
     "tradingagents-research-manager__DXp8YLaipORggHwr.json": {
         "role": "Research Manager",
         "log_type": "research",
-        "last_node": "agent-node"
+        "last_node": "Research Manager"
     },
     "tradingagents-portfolio-manager__53Li8sbHz5IsPyNr.json": {
         "role": "Portfolio Manager",
         "log_type": "decision",
-        "last_node": "agent-node"
+        "last_node": "Portfolio Manager"
     }
 }
 
 def create_postgres_node(role, log_type, position):
-    # Robust session_id lookup that checks trigger nodes
     session_id_expr = "={{ $node[\"Execute Workflow Trigger\"].json.session_id || $node[\"When Executed by Another Workflow\"].json.session_id || $node[\"[CLI Test] News Analyst Webhook\"].json.session_id || $node[\"[CLI Test] Technical Analyst Webhook\"].json.session_id || $json.session_id }}"
     
     return {
@@ -97,44 +96,63 @@ def update_workflow_json(filepath, config):
     with open(filepath, 'r') as f:
         wf = json.load(f)
 
-    # 1. Find the last node to get its position
-    last_node = next((n for n in wf['nodes'] if n['name'] == config['last_node'] or n['id'] == config['last_node']), None)
+    # 1. Remove any existing Push Log nodes and their connections
+    wf['nodes'] = [n for n in wf['nodes'] if n['name'] != "Push Log — Internal"]
+    
+    new_connections = {}
+    for source, targets in wf['connections'].items():
+        new_targets = {}
+        for conn_type, outputs in targets.items():
+            new_outputs = []
+            for group in outputs:
+                new_group = [t for t in group if t.get('node') != "Push Log — Internal"]
+                if new_group:
+                    new_outputs.append(new_group)
+            if new_outputs:
+                new_targets[conn_type] = new_outputs
+        if new_targets:
+            new_connections[source] = new_targets
+    wf['connections'] = new_connections
+
+    # 2. Find the last node
+    last_node_name = config['last_node']
+    last_node = next((n for n in wf['nodes'] if n['name'] == last_node_name), None)
     if not last_node:
-        print(f"Could not find last node {config['last_node']} in {filepath}")
+        print(f"Could not find node {last_node_name} in {filepath}")
         return
 
-    # 2. Upsert logging node
-    log_node_index = next((i for i, n in enumerate(wf['nodes']) if n['name'] == "Push Log — Internal"), None)
-    new_log_node = create_postgres_node(config['role'], config['log_type'], last_node['position'])
+    # 3. Add fresh Push Log node
+    log_node = create_postgres_node(config['role'], config['log_type'], last_node['position'])
+    wf['nodes'].append(log_node)
+
+    # 4. Connect last node to log node
+    source_name = last_node['name']
+    if source_name not in wf['connections']:
+        wf['connections'][source_name] = { "main": [] }
     
-    if log_node_index is not None:
-        wf['nodes'][log_node_index] = new_log_node
-    else:
-        wf['nodes'].append(new_log_node)
+    # Check if main connections already has outputs
+    if "main" not in wf['connections'][source_name]:
+         wf['connections'][source_name]["main"] = []
+    
+    if not wf['connections'][source_name]["main"]:
+        wf['connections'][source_name]["main"].append([])
+    
+    # We always append to the first output index's group
+    wf['connections'][source_name]["main"][0].append({
+        "node": "Push Log — Internal",
+        "type": "main",
+        "index": 0
+    })
 
-        # 3. Connect last node to log node
-        source_name = last_node['name']
-        if source_name not in wf['connections']:
-            wf['connections'][source_name] = { "main": [] }
-        
-        wf['connections'][source_name]['main'].append([
-            {
-                "node": new_log_node['name'],
-                "type": "main",
-                "index": 0
-            }
-        ])
-
-    # 4. Save locally
+    # 5. Save locally
     with open(filepath, 'w') as f:
         json.dump(wf, f, indent=2)
 
-    # 5. Push to n8n
+    # 6. Push to n8n
     wf_id = wf.get('id')
     if wf_id:
         allowed_fields = ['name', 'nodes', 'connections', 'settings']
         payload = {k: v for k, v in wf.items() if k in allowed_fields}
-        
         url = f"{API_URL}/api/v1/workflows/{wf_id}"
         response = requests.put(url, headers=HEADERS, json=payload)
         if response.status_code == 200:
@@ -142,32 +160,8 @@ def update_workflow_json(filepath, config):
         else:
             print(f"Failed to push {wf_id}: {response.status_code} - {response.text}")
 
-def clean_supervisor():
-    filepath = "definitions/tradingagents-supervisor-orchestrator__UDRkHgYzqs3GBaat.json"
-    print(f"Cleaning supervisor {filepath}...")
-    with open(filepath, 'r') as f:
-        wf = json.load(f)
-
-    # Remove Push Log nodes
-    original_count = len(wf['nodes'])
-    wf['nodes'] = [n for n in wf['nodes'] if not (n['name'].startswith("Push Log —") and n['type'] == "n8n-nodes-base.postgres")]
-    print(f"Removed {original_count - len(wf['nodes'])} logging nodes from supervisor.")
-
-    with open(filepath, 'w') as f:
-        json.dump(wf, f, indent=2)
-    
-    wf_id = wf.get('id')
-    if wf_id:
-        allowed_fields = ['name', 'nodes', 'connections', 'settings']
-        payload = {k: v for k, v in wf.items() if k in allowed_fields}
-        url = f"{API_URL}/api/v1/workflows/{wf_id}"
-        response = requests.put(url, headers=HEADERS, json=payload)
-        print(f"Supervisor push: {response.status_code}")
-
 if __name__ == "__main__":
     for filename, config in WORKFLOW_UPDATES.items():
         path = os.path.join("definitions", filename)
         if os.path.exists(path):
             update_workflow_json(path, config)
-    
-    clean_supervisor()
